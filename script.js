@@ -165,3 +165,58 @@ async function init() {
 
 // Start aplikacji
 document.addEventListener('DOMContentLoaded', init);
+
+// Zamiast bezpośredniego wywołania GitHub API
+async function fetchData() {
+    const response = await fetch('/api/get-data');
+    return await response.json();
+}
+
+app.get('/api/get-data', async (req, res) => {
+    const githubResponse = await fetch('https://api.github.com/...', {
+        headers: { 'Authorization': `token ${process.env.GITHUB_TOKEN}` }
+    });
+    res.json(await githubResponse.json());
+});
+
+// Plik /api/sync.js
+exports.handler = async (event) => {
+    // Logika bezpiecznego połączenia z GitHub
+};
+
+async function handleConflicts(localData, remoteData) {
+    // Znajdź elementy zmodyfikowane lokalnie i zdalnie
+    const localChanges = localData.filter(lItem => 
+        !remoteData.some(rItem => rItem.id === lItem.id) || 
+        remoteData.some(rItem => 
+            rItem.id === lItem.id && 
+            new Date(rItem.timestamp) < new Date(lItem.timestamp)
+    );
+    
+    // Połącz zmiany (strategia: lokalne zmiany mają priorytet)
+    const mergedData = [
+        ...remoteData.filter(rItem => 
+            !localChanges.some(lItem => lItem.id === rItem.id)
+        ),
+        ...localChanges
+    ];
+    
+    return mergedData;
+}
+
+// W schemacie danych
+{
+    id: 123,
+    name: "Jan",
+    age: 30,
+    version: 3, // zwiększaj przy każdej modyfikacji
+    lastModified: "2023-10-01T12:30:00Z"
+}
+
+// Przed wysłaniem na serwer
+if (!navigator.onLine) {
+    const queue = JSON.parse(localStorage.getItem('syncQueue') || '[]');
+    queue.push({ type: 'ADD_PERSON', data: newPerson });
+    localStorage.setItem('syncQueue', JSON.stringify(queue));
+    return;
+}
