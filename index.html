@@ -1,0 +1,1858 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System sprawdzania obecności</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #d0d1d4;
+            color: #333;
+        }
+
+        header {
+            background: linear-gradient(135deg, #714bb7, #2a1848);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .container {
+            display: flex;
+            min-height: 80vh;
+            gap: 20px;
+        }
+
+        nav {
+            flex: 1;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        main {
+            flex: 3;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        h1,
+        h2,
+        h3 {
+            margin-top: 0;
+        }
+
+        button {
+            background-color: #5f4bb7;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px 0;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #613a9f;
+        }
+
+        input,
+        select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 100%;
+            margin: 5px 0 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: #f8f9fa;
+        }
+
+        tr:hover {
+            background-color: #f1f5f9;
+        }
+
+        .attendance-present {
+            color: #28a745;
+        }
+
+        .attendance-absent {
+            color: #dc3545;
+        }
+
+        .attendance-excused {
+            color: #ffc107;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 10px;
+            text-decoration: none;
+            color: #333;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            transition: all 0.3s;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background-color: #eef2f7;
+            color: #624bb7;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: #f8f9fa;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .list-item:hover {
+            background-color: #e9ecef;
+        }
+
+        .stats-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background-color: #dc3545;
+            color: white;
+            font-size: 0.8em;
+        }
+
+        .session-item {
+            padding: 8px;
+            background-color: #eef2f7;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .session-item:hover {
+            background-color: #e2e6ea;
+        }
+
+        .badge {
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .stats-good {
+            background-color: #28a745 !important;
+        }
+
+        .stats-medium {
+            background-color: #ffc107 !important;
+        }
+
+        .stats-bad {
+            background-color: #dc3545 !important;
+        }
+
+        .warning-icon {
+            color: #dc3545;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .filter-section {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 200px;
+        }
+
+        .badge-circle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-weight: bold;
+            color: white;
+        }
+
+        .present-badge {
+            background-color: #28a745;
+        }
+
+        .absent-badge {
+            background-color: #dc3545;
+        }
+
+        .absent-high-badge {
+            background-color: #007bff;
+        }
+
+        .excused-badge {
+            background-color: #ffc107;
+        }
+
+        .person-detail-row {
+            background-color: #f8f9fa;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .person-info {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .person-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #2a1848;
+        }
+
+        .person-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .person-meta div {
+            display: flex;
+            align-items: center;
+        }
+
+        .person-meta strong {
+            margin-right: 5px;
+            color: #333;
+        }
+
+        .function-tag {
+            display: inline-flex;
+            align-items: center;
+            background-color: #e9ecef;
+            padding: 6px 12px;
+            border-radius: 20px;
+            margin: 5px 5px 5px 0;
+            font-size: 0.9em;
+            gap: 5px;
+        }
+
+        .function-tag .remove-function {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            font-weight: bold;
+            padding: 0;
+            font-size: 1.1em;
+        }
+
+        .function-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .function-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .list-assignment {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .list-select {
+            width: 100%;
+        }
+
+        .functions-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .function-card {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .function-card h3 {
+            margin-bottom: 10px;
+        }
+
+        .function-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .session-date-input {
+            position: relative;
+        }
+
+        .session-date-input input {
+            cursor: pointer;
+        }
+
+        .session-date-input::after {
+            content: "";
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        .assignment-group {
+            margin-bottom: 15px;
+        }
+
+        .assignment-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        /* Styl dla nowej strony Usprawiedliwienia */
+        .excuse-card {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .excuse-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .excuse-card-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2a1848;
+        }
+
+        .excuse-card-date {
+            font-weight: bold;
+            color: #5f4bb7;
+        }
+
+        .excuse-card-body {
+            margin-top: 15px;
+        }
+
+        .excuse-select {
+            width: 100%;
+            height: 150px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .no-future-sessions {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            color: #666;
+        }
+
+        /* Nowy styl dla sekcji funkcji w osobach */
+        .function-section {
+            margin-top: 20px;
+        }
+
+        .function-section-title {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            color: #2a1848;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        /* Nowe style dla usprawiedliwień */
+        .excuse-card {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .excuse-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .excuse-card-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2a1848;
+        }
+
+        .excuse-card-date {
+            font-weight: bold;
+            color: #5f4bb7;
+        }
+
+        .excuse-card-body {
+            margin-top: 15px;
+        }
+
+        .excuse-select {
+            width: 100%;
+            height: 150px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .no-future-sessions {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            color: #666;
+        }
+
+        .no-groups {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .person-meta div {
+            margin-bottom: 5px;
+        }
+
+        /* Nowe style dla listy osób do usprawiedliwienia */
+        .excuse-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        .excuse-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .excuse-item:last-child {
+            border-bottom: none;
+        }
+
+        .excuse-item input {
+            margin-right: 10px;
+            width: auto;
+        }
+
+        .select-all-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>System sprawdzania obecności</h1>
+    </header>
+
+    <div class="container">
+        <nav>
+            <h2>Menu</h2>
+            <a href="#" class="nav-link active" data-page="lists">Listy obecności</a>
+            <a href="#" class="nav-link" data-page="new-list">Nowa lista</a>
+            <a href="#" class="nav-link" data-page="global-people">Dodawanie osób</a>
+            <a href="#" class="nav-link" data-page="functions">Funkcje</a>
+            <a href="#" class="nav-link" data-page="people">Osoby</a>
+            <a href="#" class="nav-link" data-page="excuses">Usprawiedliwienia</a>
+            <a href="#" class="nav-link" data-page="stats">Statystyki obecności</a>
+        </nav>
+
+        <main>
+            <!-- Strona: Listy obecności -->
+            <div id="lists" class="page active">
+                <h2>Twoje listy obecności</h2>
+                <div id="list-container"></div>
+            </div>
+
+            <!-- Strona: Nowa lista -->
+            <div id="new-list" class="page">
+                <h2>Utwórz nową listę</h2>
+                <div>
+                    <label for="list-name">Nazwa listy:</label>
+                    <input type="text" id="list-name" placeholder="Np. Grupa A, Klasa 3B">
+                    <button id="create-list">Utwórz listę</button>
+                </div>
+            </div>
+
+            <!-- Strona: Dodawanie osób globalnych -->
+            <div id="global-people" class="page">
+                <h2>Dodawanie osób globalnych</h2>
+                <div>
+                    <label for="new-global-person">Imię i nazwisko:</label>
+                    <input type="text" id="new-global-person" placeholder="Imię i nazwisko">
+                    <button id="add-global-person">Dodaj osobę</button>
+                </div>
+                <div>
+                    <h3>Lista osób globalnych</h3>
+                    <ul id="global-people-list"></ul>
+                </div>
+            </div>
+
+            <!-- Strona: Funkcje -->
+            <div id="functions" class="page">
+                <h2>Zarządzanie funkcjami</h2>
+                <div>
+                    <label for="new-function">Nazwa funkcji:</label>
+                    <input type="text" id="new-function" placeholder="Np. Kierownik, Koordynator">
+                    <button id="add-function">Dodaj funkcję</button>
+                </div>
+
+                <div class="functions-container">
+                    <div class="function-card">
+                        <h3>Dostępne funkcje</h3>
+                        <div id="functions-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Strona: Osoby (zaktualizowana) -->
+            <div id="people" class="page">
+                <h2>Osoby</h2>
+                <div id="people-details-container"></div>
+            </div>
+
+            <!-- Nowa strona: Usprawiedliwienia -->
+            <div id="excuses" class="page">
+                <h2>Usprawiedliwienia</h2>
+                <div id="future-sessions-container"></div>
+            </div>
+
+            <!-- Strona: Zarządzanie listą -->
+            <div id="manage-list" class="page">
+                <h2 id="current-list-name">Zarządzanie listą</h2>
+
+                <!-- Sekcja sesji na górze -->
+                <div>
+                    <h3>Sesje obecności</h3>
+                    <div class="session-date-input">
+                        <label for="session-date">Data sesji:</label>
+                        <input type="date" id="session-date">
+                        <button id="add-session">Dodaj sesję</button>
+                    </div>
+                    <div id="sessions-container" style="margin-top: 20px;"></div>
+                </div>
+
+                <!-- Sekcja dodawania osób -->
+                <div>
+                    <h3>Dodaj osobę do listy</h3>
+                    <select id="person-to-add">
+                        <option value="">Wybierz osobę</option>
+                        <!-- Opcje będą dodawane dynamicznie -->
+                    </select>
+                    <button id="add-person-to-list">Dodaj osobę do listy</button>
+                </div>
+
+                <!-- Sekcja osób na liście -->
+                <div>
+                    <h3>Osoby na liście</h3>
+                    <table id="people-list">
+                        <thead>
+                            <tr>
+                                <th>Imię i nazwisko</th>
+                                <th>Akcje</th>
+                            </tr>
+                        </thead>
+                        <tbody id="people-list-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Strona: Statystyki obecności -->
+            <div id="stats" class="page">
+                <h2>Statystyki obecności</h2>
+
+                <div class="filter-section">
+                    <div class="filter-group">
+                        <label for="period">Okres:</label>
+                        <select id="period">
+                            <option value="all">Cały okres</option>
+                            <option value="1">Ostatni miesiąc</option>
+                            <option value="2">Ostatnie 2 miesiące</option>
+                            <option value="3">Ostatnie 3 miesiące</option>
+                            <option value="6">Ostatnie 6 miesięcy</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="list-filter">Lista:</label>
+                        <select id="list-filter">
+                            <option value="all">Wszystkie listy</option>
+                            <!-- Opcje będą dodawane dynamicznie -->
+                        </select>
+                    </div>
+
+                    <button id="apply-filter">Zastosuj filtr</button>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Osoba</th>
+                            <th>Obecności</th>
+                            <th>Nieobecności</th>
+                            <th>Usprawiedliwienia</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stats-body"></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Struktura danych
+        let attendanceData = {
+            lists: JSON.parse(localStorage.getItem('attendanceLists')) || [],
+            globalPeople: JSON.parse(localStorage.getItem('globalPeople')) || [],
+            personDetails: JSON.parse(localStorage.getItem('personDetails')) || {},
+            functions: JSON.parse(localStorage.getItem('globalFunctions')) || []
+        };
+
+        // Stan aplikacji
+        let currentState = {
+            activeListId: null,
+            currentSession: null
+        };
+
+        // Inicjalizacja
+        document.addEventListener('DOMContentLoaded', () => {
+            renderLists();
+            renderGlobalPeople();
+            renderFunctions();
+            setupNavigation();
+            setupEventListeners();
+            renderListFilterOptions();
+
+            // Dodaj obsługę klawisza Enter
+            setupKeyboardShortcuts();
+
+            // Automatycznie otwórz kalendarz przy dodawaniu sesji
+            setupSessionDateInput();
+        });
+
+        // Renderowanie list
+        function renderLists() {
+            const container = document.getElementById('list-container');
+            container.innerHTML = '';
+
+            if (attendanceData.lists.length === 0) {
+                container.innerHTML = '<p>Brak list. Utwórz nową listę.</p>';
+                return;
+            }
+
+            attendanceData.lists.forEach(list => {
+                const listElement = document.createElement('div');
+                listElement.className = 'list-item';
+                listElement.dataset.id = list.id;
+
+                const sessionCount = list.sessions ? list.sessions.length : 0;
+                const peopleCount = list.people ? list.people.length : 0;
+
+                listElement.innerHTML = `
+                    <div>
+                        <strong>${list.name}</strong>
+                        <div style="font-size: 0.9em; color: #666;">
+                            Osoby: ${peopleCount}, Sesje: ${sessionCount}
+                        </div>
+                    </div>
+                    <div>
+                        <button data-id="${list.id}" class="delete-list">Usuń</button>
+                    </div>
+                `;
+                container.appendChild(listElement);
+
+                // Kliknięcie na listę otwiera ją
+                listElement.addEventListener('click', (e) => {
+                    if (!e.target.classList.contains('delete-list')) {
+                        openList(list.id);
+                    }
+                });
+            });
+
+            // Dodaj obsługę usuwania list
+            document.querySelectorAll('.delete-list').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const listId = e.target.dataset.id;
+                    deleteList(listId);
+                });
+            });
+        }
+
+        // Renderowanie osób globalnych
+        function renderGlobalPeople() {
+            const container = document.getElementById('global-people-list');
+            container.innerHTML = '';
+
+            if (attendanceData.globalPeople.length === 0) {
+                container.innerHTML = '<p>Brak osób. Dodaj nowe osoby.</p>';
+                return;
+            }
+
+            attendanceData.globalPeople.forEach((person, index) => {
+                const li = document.createElement('li');
+                li.className = 'list-item';
+                li.style.marginBottom = '5px';
+
+                li.innerHTML = `
+                    <div>${person}</div>
+                    <button class="remove-global-person" data-index="${index}">Usuń</button>
+                `;
+                container.appendChild(li);
+            });
+
+            // Dodaj obsługę usuwania osób globalnych
+            document.querySelectorAll('.remove-global-person').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    const person = attendanceData.globalPeople[index];
+
+                    // Usuń osobę ze wszystkich list
+                    attendanceData.lists.forEach(list => {
+                        if (list.people) {
+                            const personIndex = list.people.indexOf(person);
+                            if (personIndex !== -1) {
+                                list.people.splice(personIndex, 1);
+                            }
+                        }
+                    });
+
+                    // Usuń osobę z globalnej listy
+                    attendanceData.globalPeople.splice(index, 1);
+
+                    // Usuń szczegóły osoby
+                    delete attendanceData.personDetails[person];
+
+                    saveData();
+                    renderGlobalPeople();
+                    renderListPeopleOptions();
+                    renderPeopleDetails();
+                    renderLists();
+                });
+            });
+        }
+
+        // Renderowanie funkcji
+        function renderFunctions() {
+            const container = document.getElementById('functions-list');
+            container.innerHTML = '';
+
+            if (attendanceData.functions.length === 0) {
+                container.innerHTML = '<p>Brak funkcji. Dodaj nowe funkcje.</p>';
+                return;
+            }
+
+            attendanceData.functions.forEach((func, index) => {
+                const funcElement = document.createElement('div');
+                funcElement.className = 'function-item';
+
+                funcElement.innerHTML = `
+                    <div>${func}</div>
+                    <button class="remove-function" data-index="${index}">Usuń</button>
+                `;
+
+                container.appendChild(funcElement);
+            });
+
+            // Dodaj obsługę usuwania funkcji
+            document.querySelectorAll('.remove-function').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    const functionName = attendanceData.functions[index];
+
+                    // Usuń funkcję ze wszystkich osób
+                    for (const person in attendanceData.personDetails) {
+                        const details = attendanceData.personDetails[person];
+                        if (details.functions) {
+                            const funcIndex = details.functions.indexOf(functionName);
+                            if (funcIndex !== -1) {
+                                details.functions.splice(funcIndex, 1);
+                            }
+                        }
+                    }
+
+                    // Usuń funkcję z listy globalnej
+                    attendanceData.functions.splice(index, 1);
+
+                    saveData();
+                    renderFunctions();
+                    renderPeopleDetails();
+                });
+            });
+        }
+
+        // Renderowanie szczegółów osób (zaktualizowane)
+        function renderPeopleDetails() {
+            const container = document.getElementById('people-details-container');
+            container.innerHTML = '';
+
+            if (attendanceData.globalPeople.length === 0) {
+                container.innerHTML = '<p>Brak osób. Dodaj nowe osoby w zakładce "Dodawanie osób".</p>';
+                return;
+            }
+
+            attendanceData.globalPeople.forEach(person => {
+                const detailElement = document.createElement('div');
+                detailElement.className = 'person-detail-row';
+
+                // Znajdź listy, w których jest osoba
+                const lists = attendanceData.lists.filter(list =>
+                    list.people && list.people.includes(person)
+                ).map(list => list.name);
+
+                // Funkcje osoby
+                const functions = attendanceData.personDetails[person]?.functions || [];
+
+                detailElement.innerHTML = `
+                    <div class="person-info">
+                        <div class="person-name">${person}</div>
+                        <div class="person-meta">
+                            <div><strong>Podzespoły:</strong> ${lists.join(', ') || 'Brak'}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="function-section">
+                        <div class="function-section-title">Przypisane funkcje</div>
+                        <div class="function-list">
+                            ${functions.map(func => `
+                                <span class="function-tag">
+                                    ${func}
+                                    <button class="remove-function" data-person="${person}" data-function="${func}">×</button>
+                                </span>
+                            `).join('')}
+                        </div>
+                        
+                        <div class="function-controls">
+                            <select class="function-select" data-person="${person}">
+                                <option value="">Wybierz funkcję</option>
+                                ${attendanceData.functions.map(func => `
+                                    <option value="${func}">${func}</option>
+                                `).join('')}
+                            </select>
+                            <button class="assign-function" data-person="${person}">Przypisz funkcję</button>
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(detailElement);
+            });
+
+            // Dodaj obsługę przypisywania funkcji
+            document.querySelectorAll('.assign-function').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const person = e.target.dataset.person;
+                    const select = document.querySelector(`.function-select[data-person="${person}"]`);
+                    const functionName = select.value;
+
+                    if (!functionName) {
+                        alert('Proszę wybrać funkcję');
+                        return;
+                    }
+
+                    if (!attendanceData.personDetails[person]) {
+                        attendanceData.personDetails[person] = { functions: [] };
+                    }
+
+                    if (!attendanceData.personDetails[person].functions.includes(functionName)) {
+                        attendanceData.personDetails[person].functions.push(functionName);
+                        saveData();
+                        renderPeopleDetails();
+                    }
+
+                    select.value = '';
+                });
+            });
+
+            // Dodaj obsługę usuwania funkcji
+            document.querySelectorAll('.function-tag .remove-function').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const person = e.target.dataset.person;
+                    const functionName = e.target.dataset.function;
+
+                    if (attendanceData.personDetails[person] && attendanceData.personDetails[person].functions) {
+                        const index = attendanceData.personDetails[person].functions.indexOf(functionName);
+                        if (index !== -1) {
+                            attendanceData.personDetails[person].functions.splice(index, 1);
+                            saveData();
+                            renderPeopleDetails();
+                        }
+                    }
+                });
+            });
+        }
+
+        // Renderowanie opcji dla listy osób w statystykach
+        function renderListFilterOptions() {
+            const select = document.getElementById('list-filter');
+            select.innerHTML = '<option value="all">Wszystkie listy</option>';
+
+            attendanceData.lists.forEach(list => {
+                const option = document.createElement('option');
+                option.value = list.id;
+                option.textContent = list.name;
+                select.appendChild(option);
+            });
+        }
+
+        // Renderowanie opcji dla listy osób w zarządzaniu listą
+        function renderListPeopleOptions() {
+            const select = document.getElementById('person-to-add');
+            select.innerHTML = '<option value="">Wybierz osobę</option>';
+
+            attendanceData.globalPeople.forEach(person => {
+                const option = document.createElement('option');
+                option.value = person;
+                option.textContent = person;
+                select.appendChild(option);
+            });
+        }
+
+        // Obsługa nawigacji
+        function setupNavigation() {
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const pageId = e.target.dataset.page;
+
+                    // Ukryj wszystkie strony
+                    document.querySelectorAll('.page').forEach(page => {
+                        page.classList.remove('active');
+                    });
+
+                    // Usuń aktywną klasę z linków
+                    document.querySelectorAll('.nav-link').forEach(link => {
+                        link.classList.remove('active');
+                    });
+
+                    // Pokaż wybraną stronę
+                    document.getElementById(pageId).classList.add('active');
+                    e.target.classList.add('active');
+
+                    // Odśwież zawartość strony
+                    if (pageId === 'stats') {
+                        renderStats();
+                    } else if (pageId === 'global-people') {
+                        renderGlobalPeople();
+                    } else if (pageId === 'people') {
+                        renderPeopleDetails();
+                    } else if (pageId === 'lists') {
+                        renderLists();
+                    } else if (pageId === 'functions') {
+                        renderFunctions();
+                    } else if (pageId === 'excuses') {
+                        renderFutureSessions();
+                    }
+                });
+            });
+        }
+
+        // Ustawianie skrótów klawiaturowych
+        function setupKeyboardShortcuts() {
+            // Enter przy tworzeniu listy
+            document.getElementById('list-name').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    document.getElementById('create-list').click();
+                }
+            });
+
+            // Enter przy dodawaniu osoby globalnej
+            document.getElementById('new-global-person').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    document.getElementById('add-global-person').click();
+                }
+            });
+
+            // Enter przy dodawaniu sesji
+            document.getElementById('session-date').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    document.getElementById('add-session').click();
+                }
+            });
+
+            // Enter przy dodawaniu osoby do listy
+            document.getElementById('person-to-add').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    document.getElementById('add-person-to-list').click();
+                }
+            });
+
+            // Enter przy dodawaniu funkcji
+            document.getElementById('new-function').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    document.getElementById('add-function').click();
+                }
+            });
+        }
+
+        // Ustawienie kalendarza dla sesji
+        function setupSessionDateInput() {
+            const dateInput = document.getElementById('session-date');
+
+            // Ustaw dzisiejszą datę jako domyślną
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.value = today;
+
+            // Automatycznie otwórz kalendarz
+            dateInput.focus();
+            dateInput.click();
+        }
+
+        // Nasłuchiwanie zdarzeń
+        function setupEventListeners() {
+            // Tworzenie nowej listy
+            document.getElementById('create-list').addEventListener('click', () => {
+                const listName = document.getElementById('list-name').value.trim();
+                if (!listName) {
+                    alert('Proszę podać nazwę listy');
+                    return;
+                }
+
+                const newList = {
+                    id: Date.now().toString(),
+                    name: listName,
+                    people: [],
+                    sessions: []
+                };
+
+                attendanceData.lists.push(newList);
+                saveData();
+                renderLists();
+                renderListFilterOptions();
+                document.getElementById('list-name').value = '';
+                alert(`Utworzono nową listę: ${listName}`);
+            });
+
+            // Dodawanie osoby globalnej
+            document.getElementById('add-global-person').addEventListener('click', () => {
+                const name = document.getElementById('new-global-person').value.trim();
+                if (!name) {
+                    alert('Proszę podać imię i nazwisko');
+                    return;
+                }
+
+                if (attendanceData.globalPeople.includes(name)) {
+                    alert('Osoba o tym imieniu i nazwisku już istnieje!');
+                    return;
+                }
+
+                attendanceData.globalPeople.push(name);
+
+                // Inicjalizuj szczegóły osoby
+                if (!attendanceData.personDetails[name]) {
+                    attendanceData.personDetails[name] = { functions: [] };
+                }
+
+                saveData();
+                renderGlobalPeople();
+                renderListPeopleOptions();
+                document.getElementById('new-global-person').value = '';
+            });
+
+            // Dodawanie funkcji
+            document.getElementById('add-function').addEventListener('click', () => {
+                const functionName = document.getElementById('new-function').value.trim();
+                if (!functionName) {
+                    alert('Proszę podać nazwę funkcji');
+                    return;
+                }
+
+                if (attendanceData.functions.includes(functionName)) {
+                    alert('Funkcja o tej nazwie już istnieje!');
+                    return;
+                }
+
+                attendanceData.functions.push(functionName);
+                saveData();
+                renderFunctions();
+                document.getElementById('new-function').value = '';
+            });
+
+            // Dodawanie osoby do listy
+            document.getElementById('add-person-to-list').addEventListener('click', () => {
+                const person = document.getElementById('person-to-add').value.trim();
+                if (!person) {
+                    alert('Proszę wybrać osobę');
+                    return;
+                }
+
+                const list = attendanceData.lists.find(l => l.id === currentState.activeListId);
+                if (list) {
+                    if (!list.people) list.people = [];
+
+                    if (list.people.includes(person)) {
+                        alert('Osoba jest już na liście!');
+                        return;
+                    }
+
+                    list.people.push(person);
+                    saveData();
+                    renderPeopleList();
+                    renderPeopleDetails();
+                }
+            });
+
+            // Dodawanie sesji
+            document.getElementById('add-session').addEventListener('click', () => {
+                const date = document.getElementById('session-date').value;
+                if (!date) {
+                    alert('Proszę wybrać datę sesji');
+                    return;
+                }
+
+                const list = attendanceData.lists.find(l => l.id === currentState.activeListId);
+                if (!list) return;
+
+                // Sprawdź czy sesja już istnieje
+                if (list.sessions.some(s => s.date === date)) {
+                    alert('Sesja dla tej daty już istnieje!');
+                    return;
+                }
+
+                const newSession = {
+                    date: date,
+                    attendance: {}
+                };
+
+                // Domyślnie wszyscy obecni
+                if (list.people) {
+                    list.people.forEach(person => {
+                        newSession.attendance[person] = 'present';
+                    });
+                }
+
+                if (!list.sessions) list.sessions = [];
+                list.sessions.push(newSession);
+                saveData();
+                renderSessions();
+
+                // Automatycznie otwórz kalendarz ponownie
+                setupSessionDateInput();
+            });
+
+            // Filtrowanie statystyk
+            document.getElementById('apply-filter').addEventListener('click', renderStats);
+        }
+
+        // Otwieranie listy
+        function openList(listId) {
+            const list = attendanceData.lists.find(l => l.id === listId);
+            if (!list) return;
+
+            currentState.activeListId = listId;
+            document.getElementById('current-list-name').textContent = `Zarządzanie listą: ${list.name}`;
+
+            // Przełącz na stronę zarządzania
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById('manage-list').classList.add('active');
+
+            // Aktualizuj menu
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+
+            // Inicjalizuj puste listy jeśli nie istnieją
+            if (!list.people) list.people = [];
+            if (!list.sessions) list.sessions = [];
+
+            renderListPeopleOptions();
+            renderPeopleList();
+            renderSessions();
+        }
+
+        // Renderowanie listy osób
+        function renderPeopleList() {
+            const list = attendanceData.lists.find(l => l.id === currentState.activeListId);
+            if (!list) return;
+
+            const tbody = document.getElementById('people-list-body');
+            tbody.innerHTML = '';
+
+            list.people.forEach((person, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${person}</td>
+                    <td>
+                        <button class="remove-person" data-index="${index}">Usuń</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // Dodaj obsługę usuwania osób
+            document.querySelectorAll('.remove-person').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    const person = list.people[index];
+
+                    // Usuń osobę ze wszystkich sesji
+                    list.sessions.forEach(session => {
+                        if (session.attendance[person]) {
+                            delete session.attendance[person];
+                        }
+                    });
+
+                    list.people.splice(index, 1);
+                    saveData();
+                    renderPeopleList();
+                    renderSessions();
+                    renderPeopleDetails();
+                });
+            });
+        }
+
+        // Otwieranie sesji
+        function openSession(sessionIndex) {
+            const list = attendanceData.lists.find(l => l.id === currentState.activeListId);
+            if (!list || !list.sessions[sessionIndex]) return;
+
+            currentState.currentSession = sessionIndex;
+            const session = list.sessions[sessionIndex];
+
+            // Utwórz okno modalne do zarządzania sesją
+            const modal = document.createElement('div');
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100%';
+            modal.style.height = '100%';
+            modal.style.backgroundColor = 'rgba(0,0,0,0.5)';
+            modal.style.display = 'flex';
+            modal.style.justifyContent = 'center';
+            modal.style.alignItems = 'center';
+            modal.style.zIndex = '1000';
+
+            const modalContent = document.createElement('div');
+            modalContent.style.backgroundColor = 'white';
+            modalContent.style.padding = '20px';
+            modalContent.style.borderRadius = '10px';
+            modalContent.style.width = '90%';
+            modalContent.style.maxWidth = '800px';
+            modalContent.style.maxHeight = '90vh';
+            modalContent.style.overflowY = 'auto';
+
+            modalContent.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2>Obecność: ${session.date}</h2>
+                    <button id="close-modal" style="background: none; border: none; font-size: 1.5em; cursor: pointer;">×</button>
+                </div>
+                <p>Lista: ${list.name}</p>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Osoba</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="session-attendance-body"></tbody>
+                </table>
+                <div style="margin-top: 20px; text-align: right;">
+                    <button id="save-session">Zapisz zmiany</button>
+                </div>
+            `;
+
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+
+            // Wypełnij tabelę obecności
+            const tbody = document.getElementById('session-attendance-body');
+            tbody.innerHTML = '';
+
+            list.people.forEach(person => {
+                const row = document.createElement('tr');
+                const status = session.attendance[person] || 'present';
+
+                row.innerHTML = `
+                    <td>${person}</td>
+                    <td>
+                        <select class="person-attendance" data-person="${person}">
+                            <option value="present" ${status === 'present' ? 'selected' : ''}>Obecny</option>
+                            <option value="absent" ${status === 'absent' ? 'selected' : ''}>Nieobecny</option>
+                            <option value="excused" ${status === 'excused' ? 'selected' : ''}>Usprawiedliwiony</option>
+                        </select>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // Obsługa zamknięcia modala
+            document.getElementById('close-modal').addEventListener('click', () => {
+                document.body.removeChild(modal);
+            });
+
+            // Zapisywanie zmian w sesji
+            document.getElementById('save-session').addEventListener('click', () => {
+                document.querySelectorAll('.person-attendance').forEach(select => {
+                    const person = select.dataset.person;
+                    const status = select.value;
+                    session.attendance[person] = status;
+                });
+
+                saveData();
+                alert('Zmiany zostały zapisane!');
+                document.body.removeChild(modal);
+                renderSessions();
+            });
+        }
+
+        // Renderowanie statystyk
+        function renderStats() {
+            const tbody = document.getElementById('stats-body');
+            tbody.innerHTML = '';
+
+            const period = document.getElementById('period').value;
+            const listFilter = document.getElementById('list-filter').value;
+            const today = new Date();
+            const periodStart = new Date(today);
+
+            if (period === '1') {
+                periodStart.setMonth(periodStart.getMonth() - 1);
+            } else if (period === '2') {
+                periodStart.setMonth(periodStart.getMonth() - 2);
+            } else if (period === '3') {
+                periodStart.setMonth(periodStart.getMonth() - 3);
+            } else if (period === '6') {
+                periodStart.setMonth(periodStart.getMonth() - 6);
+            }
+
+            const stats = {};
+
+            // Przejdź przez wszystkie listy i sesje
+            attendanceData.lists.forEach(list => {
+                // Pomijaj jeśli filtr jest ustawiony na konkretną listę
+                if (listFilter !== 'all' && list.id !== listFilter) {
+                    return;
+                }
+
+                if (list.sessions) {
+                    list.sessions.forEach(session => {
+                        const sessionDate = new Date(session.date);
+
+                        // Jeśli wybrano okres, sprawdź czy sesja mieści się w przedziale
+                        if (period !== 'all' && sessionDate < periodStart) {
+                            return;
+                        }
+
+                        if (session.attendance) {
+                            Object.entries(session.attendance).forEach(([person, status]) => {
+                                // Klucz tylko po imieniu i nazwisku
+                                if (!stats[person]) {
+                                    stats[person] = {
+                                        person: person,
+                                        present: 0,
+                                        absent: 0,
+                                        excused: 0
+                                    };
+                                }
+
+                                if (status === 'present') {
+                                    stats[person].present++;
+                                } else if (status === 'absent') {
+                                    stats[person].absent++;
+                                } else if (status === 'excused') {
+                                    stats[person].excused++;
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+
+            // Konwertuj na tablicę i sortuj
+            const statsArray = Object.values(stats).sort((a, b) => b.absent - a.absent);
+
+            // Wyświetl statystyki
+            statsArray.forEach(data => {
+                const row = document.createElement('tr');
+
+                // Dodaj ostrzeżenie jeśli nieobecności >= 3
+                const warning = data.absent >= 3 ? '<span class="warning-icon">⚠️</span>' : '';
+
+                // Określ klasę dla nieobecności
+                const absentClass = data.absent < 3 ? 'absent-badge' : 'absent-high-badge';
+
+                row.innerHTML = `
+                    <td>${data.person}</td>
+                    <td>
+                        <span class="badge-circle present-badge">${data.present}</span>
+                    </td>
+                    <td>
+                        <span class="badge-circle ${absentClass}">${data.absent}</span>
+                    </td>
+                    <td>
+                        <span class="badge-circle excused-badge">${data.excused}</span>
+                    </td>
+                    <td>${warning}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            if (statsArray.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5">Brak danych w wybranym okresie</td></tr>';
+            }
+        }
+
+        // Usuwanie listy
+        function deleteList(listId) {
+            if (!confirm('Czy na pewno chcesz usunąć tę listę?')) return;
+
+            attendanceData.lists = attendanceData.lists.filter(list => list.id !== listId);
+            saveData();
+            renderLists();
+            renderListFilterOptions();
+            renderPeopleDetails();
+        }
+
+        // Zapisywanie danych
+        function saveData() {
+            localStorage.setItem('attendanceLists', JSON.stringify(attendanceData.lists));
+            localStorage.setItem('globalPeople', JSON.stringify(attendanceData.globalPeople));
+            localStorage.setItem('personDetails', JSON.stringify(attendanceData.personDetails));
+            localStorage.setItem('globalFunctions', JSON.stringify(attendanceData.functions));
+        }
+
+        // Renderowanie przyszłych sesji dla usprawiedliwień
+        function renderFutureSessions() {
+            const container = document.getElementById('future-sessions-container');
+            container.innerHTML = '';
+
+            const today = new Date().toISOString().split('T')[0];
+            let hasFutureSessions = false;
+
+            attendanceData.lists.forEach(list => {
+                if (list.sessions) {
+                    list.sessions.forEach(session => {
+                        if (session.date >= today) {
+                            hasFutureSessions = true;
+
+                            const excuseCard = document.createElement('div');
+                            excuseCard.className = 'excuse-card';
+
+                            excuseCard.innerHTML = `
+                                <div class="excuse-card-header">
+                                    <div class="excuse-card-title">${list.name}</div>
+                                    <div class="excuse-card-date">${session.date}</div>
+                                </div>
+                                <div class="excuse-card-body">
+                                    <label for="excuse-select-${list.id}-${session.date}">Osoby do usprawiedliwienia:</label>
+                                    <select class="excuse-select" id="excuse-select-${list.id}-${session.date}" multiple>
+                                        ${list.people ? list.people.map(person => {
+                                const isExcused = session.attendance[person] === 'excused';
+                                return `<option value="${person}" ${isExcused ? 'selected' : ''}>${person}</option>`;
+                            }).join('') : ''}
+                                    </select>
+                                    <button class="save-excuse" data-list="${list.id}" data-date="${session.date}">Zapisz usprawiedliwienia</button>
+                                </div>
+                            `;
+
+                            container.appendChild(excuseCard);
+                        }
+                    });
+                }
+            });
+
+            if (!hasFutureSessions) {
+                container.innerHTML = `
+                    <div class="no-future-sessions">
+                        <p>Brak nadchodzących sesji.</p>
+                        <p>Dodaj sesje z przyszłymi datami w zakładce "Listy obecności".</p>
+                    </div>
+                `;
+            }
+
+            // Dodaj obsługę zapisywania usprawiedliwień
+            document.querySelectorAll('.save-excuse').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const listId = this.dataset.list;
+                    const sessionDate = this.dataset.date;
+                    const select = this.previousElementSibling;
+                    const selectedPersons = Array.from(select.selectedOptions).map(opt => opt.value);
+
+                    // Znajdź sesję
+                    const list = attendanceData.lists.find(l => l.id === listId);
+                    if (!list || !list.sessions) return;
+
+                    const session = list.sessions.find(s => s.date === sessionDate);
+                    if (!session) return;
+
+                    // Zaktualizuj status obecności
+                    list.people.forEach(person => {
+                        if (selectedPersons.includes(person)) {
+                            session.attendance[person] = 'excused';
+                        } else if (session.attendance[person] === 'excused') {
+                            // Jeśli osoba była usprawiedliwiona, ale teraz nie jest wybrana
+                            session.attendance[person] = 'present';
+                        }
+                    });
+
+                    saveData();
+                    alert('Zapisano usprawiedliwienia!');
+                });
+            });
+        }
+
+        // Renderowanie szczegółów osób (zaktualizowane)
+        function renderPeopleDetails() {
+            const container = document.getElementById('people-details-container');
+            container.innerHTML = '';
+
+            if (attendanceData.globalPeople.length === 0) {
+                container.innerHTML = '<p>Brak osób. Dodaj nowe osoby w zakładce "Dodawanie osób".</p>';
+                return;
+            }
+
+            attendanceData.globalPeople.forEach(person => {
+                const detailElement = document.createElement('div');
+                detailElement.className = 'person-detail-row';
+
+                // Znajdź listy, w których jest osoba
+                const lists = attendanceData.lists.filter(list =>
+                    list.people && list.people.includes(person)
+                ).map(list => list.name);
+
+                // Funkcje osoby
+                const functions = attendanceData.personDetails[person]?.functions || [];
+
+                // Formatowanie wyświetlania list (podświetlenie "Brak")
+                const listsDisplay = lists.length > 0
+                    ? lists.join(', ')
+                    : '<span class="no-groups">Brak</span>';
+
+                detailElement.innerHTML = `
+                    <div class="person-info">
+                        <div class="person-name">${person}</div>
+                        <div class="person-meta">
+                            <div><strong>Podzespoły:</strong> ${listsDisplay}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="function-section">
+                        <div class="function-section-title">Przypisane funkcje</div>
+                        <div class="function-list">
+                            ${functions.map(func => `
+                                <span class="function-tag">
+                                    ${func}
+                                    <button class="remove-function" data-person="${person}" data-function="${func}">×</button>
+                                </span>
+                            `).join('')}
+                        </div>
+                        
+                        <div class="function-controls">
+                            <select class="function-select" data-person="${person}">
+                                <option value="">Wybierz funkcję</option>
+                                ${attendanceData.functions.map(func => `
+                                    <option value="${func}">${func}</option>
+                                `).join('')}
+                            </select>
+                            <button class="assign-function" data-person="${person}">Przypisz funkcję</button>
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(detailElement);
+            });
+
+        }
+
+        // Renderowanie sesji (z sortowaniem)
+        function renderSessions() {
+            const container = document.getElementById('sessions-container');
+            container.innerHTML = '';
+
+            const list = attendanceData.lists.find(l => l.id === currentState.activeListId);
+            if (!list || !list.sessions) return;
+
+            if (list.sessions.length === 0) {
+                container.innerHTML = '<p>Brak sesji. Dodaj nową sesję.</p>';
+                return;
+            }
+
+            // Sortuj sesje malejąco po dacie (najnowsze na górze)
+            list.sessions.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            list.sessions.forEach((session, index) => {
+                const sessionElement = document.createElement('div');
+                sessionElement.className = 'session-item';
+                sessionElement.dataset.index = index;
+
+                // Oblicz statystyki obecności
+                let presentCount = 0;
+                let absentCount = 0;
+                let excusedCount = 0;
+
+                if (session.attendance) {
+                    Object.values(session.attendance).forEach(status => {
+                        if (status === 'present') presentCount++;
+                        if (status === 'absent') absentCount++;
+                        if (status === 'excused') excusedCount++;
+                    });
+                }
+
+                sessionElement.innerHTML = `
+                    <div>
+                        <strong>${session.date}</strong>
+                        <div>
+                            <span class="attendance-present">Obecni: ${presentCount}</span> | 
+                            <span class="attendance-absent">Nieobecni: ${absentCount}</span> |
+                            <span class="attendance-excused">Usprawiedliwieni: ${excusedCount}</span>
+                        </div>
+                    </div>
+                    <div>
+                        <button class="delete-session" data-index="${index}">Usuń</button>
+                    </div>
+                `;
+                container.appendChild(sessionElement);
+
+                // Kliknięcie na sesję otwiera zarządzanie nią
+                sessionElement.addEventListener('click', (e) => {
+                    if (!e.target.classList.contains('delete-session')) {
+                        openSession(index);
+                    }
+                });
+            });
+
+            // Dodaj obsługę usuwania sesji
+            document.querySelectorAll('.delete-session').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const sessionIndex = parseInt(e.target.dataset.index);
+                    if (confirm('Czy na pewno chcesz usunąć tę sesję?')) {
+                        list.sessions.splice(sessionIndex, 1);
+                        saveData();
+                        renderSessions();
+                    }
+                });
+            });
+        }
+
+        // Renderowanie przyszłych sesji dla usprawiedliwień (zaktualizowane)
+        function renderFutureSessions() {
+            const container = document.getElementById('future-sessions-container');
+            container.innerHTML = '';
+
+            const today = new Date().toISOString().split('T')[0];
+            let hasFutureSessions = false;
+
+            attendanceData.lists.forEach(list => {
+                if (list.sessions) {
+                    list.sessions.forEach(session => {
+                        if (session.date >= today) {
+                            hasFutureSessions = true;
+
+                            const excuseCard = document.createElement('div');
+                            excuseCard.className = 'excuse-card';
+
+                            // Generuj unikalny identyfikator dla kontenera osób
+                            const containerId = `excuse-container-${list.id}-${session.date}`;
+
+                            excuseCard.innerHTML = `
+                                <div class="excuse-card-header">
+                                    <div class="excuse-card-title">${list.name}</div>
+                                    <div class="excuse-card-date">${session.date}</div>
+                                </div>
+                                <div class="excuse-card-body">
+                                    <label>Osoby do usprawiedliwienia:</label>
+                                    
+                                    <div class="select-all-buttons">
+                                        <button class="select-all-btn" data-container="${containerId}">Zaznacz wszystkie</button>
+                                        <button class="deselect-all-btn" data-container="${containerId}">Odznacz wszystkie</button>
+                                    </div>
+                                    
+                                    <div id="${containerId}" class="excuse-list">
+                                        ${list.people ? list.people.map(person => {
+                                const isExcused = session.attendance[person] === 'excused';
+                                return `
+                                                <div class="excuse-item">
+                                                    <input type="checkbox" id="excuse-${list.id}-${session.date}-${person}" 
+                                                        value="${person}" ${isExcused ? 'checked' : ''}>
+                                                    <label for="excuse-${list.id}-${session.date}-${person}">${person}</label>
+                                                </div>
+                                            `;
+                            }).join('') : ''}
+                                    </div>
+                                    <button class="save-excuse" data-list="${list.id}" data-date="${session.date}">Zapisz usprawiedliwienia</button>
+                                </div>
+                            `;
+
+                            container.appendChild(excuseCard);
+                        }
+                    });
+                }
+            });
+
+            if (!hasFutureSessions) {
+                container.innerHTML = `
+                    <div class="no-future-sessions">
+                        <p>Brak nadchodzących sesji.</p>
+                        <p>Dodaj sesje z przyszłymi datami w zakładce "Listy obecności".</p>
+                    </div>
+                `;
+            }
+
+            // Dodaj obsługę zapisywania usprawiedliwień
+            document.querySelectorAll('.save-excuse').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const listId = this.dataset.list;
+                    const sessionDate = this.dataset.date;
+
+                    // Znajdź sesję
+                    const list = attendanceData.lists.find(l => l.id === listId);
+                    if (!list || !list.sessions) return;
+
+                    const session = list.sessions.find(s => s.date === sessionDate);
+                    if (!session) return;
+
+                    // Zbierz wszystkie zaznaczone osoby
+                    const selectedPersons = [];
+                    const checkboxes = document.querySelectorAll(`input[type="checkbox"][value][id^="excuse-${listId}-${sessionDate}"]`);
+                    checkboxes.forEach(checkbox => {
+                        if (checkbox.checked) {
+                            selectedPersons.push(checkbox.value);
+                        }
+                    });
+
+                    // Zaktualizuj status obecności
+                    list.people.forEach(person => {
+                        if (selectedPersons.includes(person)) {
+                            session.attendance[person] = 'excused';
+                        } else if (session.attendance[person] === 'excused') {
+                            // Jeśli osoba była usprawiedliwiona, ale teraz nie jest wybrana
+                            session.attendance[person] = 'present';
+                        }
+                    });
+
+                    saveData();
+                    alert('Zapisano usprawiedliwienia!');
+                });
+            });
+
+            // Dodaj obsługę przycisków "Zaznacz wszystkie" i "Odznacz wszystkie"
+            document.querySelectorAll('.select-all-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const containerId = this.dataset.container;
+                    const container = document.getElementById(containerId);
+                    const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = true;
+                    });
+                });
+            });
+
+            document.querySelectorAll('.deselect-all-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const containerId = this.dataset.container;
+                    const container = document.getElementById(containerId);
+                    const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = false;
+                    });
+                });
+            });
+        }
+
+    </script>
+</body>
+
+</html>
