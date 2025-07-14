@@ -5,6 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>System sprawdzania obecności</title>
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    
+    <!-- Firebase Authentication -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    
+    <!-- Firebase Realtime Database -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -536,6 +544,23 @@
             gap: 10px;
             margin-bottom: 10px;
         }
+
+        .auth-btn {
+          background-color: #4285F4;
+          color: white;
+          border: none;
+          padding: 10px 15px;
+          border-radius: 5px;
+          cursor: pointer;
+          display: inline-block;
+          font-size: 14px;
+          transition: background-color 0.3s;
+        }
+        
+        .auth-btn:hover {
+          background-color: #3367D6;
+        }
+        
     </style>
 </head>
 
@@ -556,6 +581,15 @@
             <a href="#" class="nav-link" data-page="stats">Statystyki obecności</a>
         </nav>
 
+        <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+          <h2>Autoryzacja Firebase</h2>
+          <div id="firebase-auth-container" style="margin-top: 10px;">
+            <div id="auth-status" style="margin-bottom: 10px;">Nieautoryzowany</div>
+            <button id="sign-in-btn" class="auth-btn">Zaloguj z Google</button>
+            <button id="sign-out-btn" class="auth-btn" style="display: none;">Wyloguj</button>
+          </div>
+        </div>
+        
         <main>
             <!-- Strona: Listy obecności -->
             <div id="lists" class="page active">
@@ -2018,6 +2052,149 @@
         
         // Ponowne wywołanie setupNavigation po aktualizacji
         setupNavigation();
+
+        // Konfiguracja Firebase - zastąp tymi wartościami z konsoli
+        const firebaseConfig = {
+          apiKey: "AIzaSyA1b2c3d4e5f6g7h8i9j0-kAlBmCnDoEpFq",
+          authDomain: "twoj-projekt.firebaseapp.com",
+          databaseURL: "https://twoj-projekt-default-rtdb.europe-west1.firebasedatabase.app",
+          projectId: "twoj-projekt",
+          storageBucket: "twoj-projekt.appspot.com",
+          messagingSenderId: "123456789012",
+          appId: "1:123456789012:web:abcdef1234567890abcde"
+        };
+        
+        // Inicjalizacja Firebase
+        firebase.initializeApp(firebaseConfig);
+        
+        // Referencje do usług Firebase
+        const auth = firebase.auth();
+        const database = firebase.database();
+        const provider = new firebase.auth.GoogleAuthProvider();
+        
+        // Globalna referencja do bazy danych
+        let dbRef = null;
+        
+        // Funkcja logowania
+        function signIn() {
+          auth.signInWithPopup(provider)
+            .then((result) => {
+              const user = result.user;
+              console.log("Zalogowano jako:", user.email);
+              initDatabase(user);
+            })
+            .catch((error) => {
+              console.error("Błąd logowania:", error);
+            });
+        }
+        
+        // Funkcja wylogowywania
+        function signOut() {
+          auth.signOut()
+            .then(() => {
+              console.log("Wylogowano");
+              dbRef = null;
+            })
+            .catch((error) => {
+              console.error("Błąd wylogowywania:", error);
+            });
+        }
+        
+        // Inicjalizacja bazy danych dla użytkownika
+        function initDatabase(user) {
+          dbRef = database.ref(`users/${user.uid}/attendanceSystem`);
+          
+          // Nasłuchuj zmian w bazie danych
+          dbRef.on('value', (snapshot) => {
+            const remoteData = snapshot.val();
+            if (remoteData) {
+              processRemoteData(remoteData);
+            }
+          });
+          
+          // Pierwsza synchronizacja
+          syncData();
+        }
+        
+        // Przetwarzanie danych z Firebase
+        function processRemoteData(remoteData) {
+          const localLastUpdated = localStorage.getItem('lastUpdated') || 0;
+          
+          if (remoteData.lastUpdated > localLastUpdated) {
+            // Aktualizuj dane lokalne
+            attendanceData = {
+              lists: remoteData.lists || [],
+              globalPeople: remoteData.globalPeople || [],
+              personDetails: remoteData.personDetails || {},
+              functions: remoteData.functions || []
+            };
+            
+            // Zapisz w localStorage
+            saveLocalData();
+            
+            // Odśwież UI
+            renderAll();
+          }
+        }
+        
+        // Synchronizacja danych z Firebase
+        function syncData() {
+          const dataToSave = {
+            lists: attendanceData.lists,
+            globalPeople: attendanceData.globalPeople,
+            personDetails: attendanceData.personDetails,
+            functions: attendanceData.functions,
+            lastUpdated: firebase.database.ServerValue.TIMESTAMP
+          };
+          
+          if (dbRef) {
+            dbRef.set(dataToSave)
+              .then(() => console.log("Dane zsynchronizowane z Firebase"))
+              .catch(error => console.error("Błąd synchronizacji:", error));
+          }
+        }
+        
+        // Modyfikacja funkcji saveData()
+        function saveData() {
+          // ... istniejąca logika zapisu do localStorage ...
+          
+          // Dodaj synchronizację z Firebase
+          syncData();
+        }
+        
+        // Funkcja renderująca stan uwierzytelniania
+        function renderAuthState(user) {
+          const authStatus = document.getElementById('auth-status');
+          const signInBtn = document.getElementById('sign-in-btn');
+          const signOutBtn = document.getElementById('sign-out-btn');
+          
+          if (user) {
+            authStatus.innerHTML = `Zalogowany jako: <strong>${user.email}</strong>`;
+            signInBtn.style.display = 'none';
+            signOutBtn.style.display = 'block';
+          } else {
+            authStatus.innerHTML = "Nieautoryzowany";
+            signInBtn.style.display = 'block';
+            signOutBtn.style.display = 'none';
+          }
+        }
+        
+        // Inicjalizacja po załadowaniu strony
+        document.addEventListener('DOMContentLoaded', () => {
+          // Inicjalizacja stanu uwierzytelniania
+          auth.onAuthStateChanged((user) => {
+            renderAuthState(user);
+            if (user) {
+              initDatabase(user);
+            }
+          });
+        
+          // Nasłuchiwanie przycisków
+          document.getElementById('sign-in-btn').addEventListener('click', signIn);
+          document.getElementById('sign-out-btn').addEventListener('click', signOut);
+          
+          // ... reszta istniejącej inicjalizacji ...
+        });
     </script>
 </body>
 
