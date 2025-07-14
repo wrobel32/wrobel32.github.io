@@ -2,19 +2,19 @@
 // EKSPORT I IMPORT DANYCH (SYNCHRONIZACJA)
 // =============================================
 
-// Dodajemy przyciski w menu
+// Dodanie pozycji w menu
 const navMenu = document.querySelector('nav');
-navMenu.innerHTML += `
+const syncMenuItem = `
     <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
         <h2>Synchronizacja</h2>
         <a href="#" class="nav-link" data-page="export-import">Eksport/Import</a>
     </div>
 `;
+navMenu.insertAdjacentHTML('beforeend', syncMenuItem);
 
-// Dodajemy stronę do eksportu/importu
-const main = document.querySelector('main');
-main.innerHTML += `
-    <!-- Strona: Eksport/Import -->
+// Dodanie strony eksportu/importu
+const mainElement = document.querySelector('main');
+const exportImportPage = `
     <div id="export-import" class="page">
         <h2>Eksport i import danych</h2>
         <div style="display: flex; gap: 20px; flex-wrap: wrap;">
@@ -35,6 +35,7 @@ main.innerHTML += `
         </div>
     </div>
 `;
+mainElement.insertAdjacentHTML('beforeend', exportImportPage);
 
 // Funkcja eksportu danych
 document.getElementById('export-data')?.addEventListener('click', () => {
@@ -133,6 +134,8 @@ document.getElementById('import-data')?.addEventListener('click', () => {
             // Automatyczne przejście do list
             document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
             document.getElementById('lists').classList.add('active');
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            document.querySelector(`.nav-link[data-page="lists"]`).classList.add('active');
             
         } catch (error) {
             console.error('Błąd importu:', error);
@@ -143,59 +146,21 @@ document.getElementById('import-data')?.addEventListener('click', () => {
     reader.readAsText(file);
 });
 
-// Dodajemy obsługę nowej strony w nawigacji
-function setupNavigation() {
-    // ... istniejący kod ...
+// Aktualizacja funkcji setupNavigation o nową stronę
+const originalSetupNavigation = setupNavigation;
+setupNavigation = function() {
+    originalSetupNavigation();
     
-    // Dodajemy obsługę nowej strony
     document.querySelectorAll('.nav-link').forEach(link => {
         link.addEventListener('click', (e) => {
-            // ... istniejący kod ...
-            
-            if (pageId === 'export-import') {
+            if (e.target.dataset.page === 'export-import') {
                 // Resetuj wyniki
                 document.getElementById('export-result').innerHTML = '';
                 document.getElementById('import-result').innerHTML = '';
             }
         });
     });
-}
+};
 
-// =============================================
-// AUTOMATYCZNA SYNCHRONIZACJA PRZEZ SERWER (OPCJONALNIE)
-// =============================================
-
-// Funkcja do automatycznej synchronizacji z serwerem (wymaga backendu)
-async function syncWithServer() {
-    try {
-        // Pobierz ostatni timestamp synchronizacji
-        const lastSync = localStorage.getItem('lastSync') || 0;
-        
-        // Wyślij dane do serwera
-        const response = await fetch('https://twoj-serwer.pl/sync', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                data: attendanceData,
-                lastSync
-            })
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            // Aktualizuj dane z serwera
-            attendanceData = result.data;
-            saveData();
-            
-            // Zapisz nowy timestamp
-            localStorage.setItem('lastSync', Date.now());
-            console.log('Synchronizacja z serwerem udana');
-        }
-    } catch (error) {
-        console.error('Błąd synchronizacji z serwerem:', error);
-    }
-}
-
-// Automatyczna synchronizacja co 5 minut
-// setInterval(syncWithServer, 5 * 60 * 1000);
+// Ponowne wywołanie setupNavigation po aktualizacji
+setupNavigation();
