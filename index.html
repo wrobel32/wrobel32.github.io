@@ -2195,6 +2195,152 @@
           
           // ... reszta istniejącej inicjalizacji ...
         });
+
+        // =============================================
+        // POPRAWIONA KONFIGURACJA FIREBASE
+        // =============================================
+        
+        // Przenieś konfigurację na początek sekcji Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBi1f47qdude_3zl8vziTlFhVH0xx3J04U",
+            authDomain: "projekt-1-974cc.firebaseapp.com",
+            projectId: "projekt-1-974cc",
+            storageBucket: "projekt-1-974cc.firebasestorage.app",
+            messagingSenderId: "537046472561",
+            appId: "1:537046472561:web:bd17ffd942f6500a52c8d0",
+            measurementId: "G-BJN98JBYJK",
+            databaseURL: "https://projekt-1-974cc-default-rtdb.europe-west1.firebasedatabase.app" // DODAJ TĘ LINIĘ!
+        };
+        
+        // Inicjalizuj Firebase przed użyciem jakichkolwiek usług
+        try {
+            firebase.initializeApp(firebaseConfig);
+            console.log("Firebase zainicjalizowany poprawnie");
+        } catch (error) {
+            console.error("Błąd inicjalizacji Firebase:", error);
+        }
+        
+        // Użyj jednej instancji dla całej aplikacji
+        const firebaseAuth = firebase.auth();
+        const firebaseDatabase = firebase.database();
+        const googleProvider = new firebase.auth.GoogleAuthProvider();
+        
+        // Usuń ponowne deklaracje (te linie usuń całkowicie):
+        // const auth = firebase.auth();
+        // const database = firebase.database();
+        // const provider = new firebase.auth.GoogleAuthProvider();
+        
+        // =============================================
+        // POPRAWIONE FUNKCJE LOGOWANIA
+        // =============================================
+        
+        function signIn() {
+            firebaseAuth.signInWithPopup(googleProvider)
+                .then((result) => {
+                    const user = result.user;
+                    console.log("Zalogowano jako:", user.email);
+                    document.getElementById('auth-status').innerHTML = 
+                        `Zalogowany jako: <strong>${user.email}</strong>`;
+                    initDatabase(user);
+                })
+                .catch((error) => {
+                    console.error("Błąd logowania:", error);
+                    alert(`Błąd logowania: ${error.message}`);
+                });
+        }
+        
+        function signOut() {
+            firebaseAuth.signOut()
+                .then(() => {
+                    console.log("Wylogowano");
+                    document.getElementById('auth-status').textContent = "Nieautoryzowany";
+                })
+                .catch((error) => {
+                    console.error("Błąd wylogowywania:", error);
+                });
+        }
+        
+        // =============================================
+        // POPRAWIONA OBSŁUGA STANU UWIERZYTELNIANIA
+        // =============================================
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // Elementy UI
+            const signInBtn = document.getElementById('sign-in-btn');
+            const signOutBtn = document.getElementById('sign-out-btn');
+            
+            if (signInBtn) {
+                signInBtn.addEventListener('click', signIn);
+            }
+            
+            if (signOutBtn) {
+                signOutBtn.addEventListener('click', signOut);
+            }
+        
+            // Monitorowanie stanu uwierzytelniania
+            firebaseAuth.onAuthStateChanged((user) => {
+                if (user) {
+                    console.log("Użytkownik zalogowany:", user.email);
+                    document.getElementById('auth-status').innerHTML = 
+                        `Zalogowany jako: <strong>${user.email}</strong>`;
+                    document.getElementById('sign-in-btn').style.display = 'none';
+                    document.getElementById('sign-out-btn').style.display = 'block';
+                    initDatabase(user);
+                } else {
+                    console.log("Brak zalogowanego użytkownika");
+                    document.getElementById('auth-status').textContent = "Nieautoryzowany";
+                    document.getElementById('sign-in-btn').style.display = 'block';
+                    document.getElementById('sign-out-btn').style.display = 'none';
+                }
+            });
+            
+            // ... reszta istniejącej inicjalizacji ...
+        });
+        
+        // =============================================
+        // POPRAWIONE POŁĄCZENIE Z BAZĄ DANYCH
+        // =============================================
+        
+        function initDatabase(user) {
+            if (!user) return;
+            
+            const dbRef = firebaseDatabase.ref(`users/${user.uid}/attendanceSystem`);
+            
+            // Nasłuchuj zmian w bazie danych
+            dbRef.on('value', (snapshot) => {
+                const remoteData = snapshot.val();
+                if (remoteData) {
+                    console.log("Otrzymano dane z Firebase");
+                    processRemoteData(remoteData);
+                }
+            });
+            
+            // Wykonaj początkową synchronizację
+            syncData();
+        }
+        
+        // =============================================
+        // DODATKOWE POPRAWKI
+        // =============================================
+        
+        // W funkcji saveData dodaj zapis timestampa:
+        function saveData() {
+            // ... istniejąca logika ...
+            localStorage.setItem('lastUpdated', Date.now());
+            
+            // Synchronizuj z Firebase
+            syncData();
+        }
+        
+        // W funkcji processRemoteData dodaj:
+        function processRemoteData(remoteData) {
+            const localLastUpdated = localStorage.getItem('lastUpdated') || 0;
+            
+            if (remoteData.lastUpdated > localLastUpdated) {
+                console.log("Aktualizuję dane z Firebase");
+                // ... reszta kodu ...
+            }
+        }
     </script>
 </body>
 
