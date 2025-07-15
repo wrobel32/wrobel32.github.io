@@ -1,17 +1,11 @@
 <!DOCTYPE html>
 <html lang="pl">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>System sprawdzania obecności</title>
-    <!-- Firebase App (the core Firebase SDK) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    
-    <!-- Firebase Authentication -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    
-    <!-- Firebase Realtime Database -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
         * {
@@ -57,9 +51,7 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
-        h1,
-        h2,
-        h3 {
+        h1, h2, h3 {
             margin-top: 0;
         }
 
@@ -78,8 +70,7 @@
             background-color: #613a9f;
         }
 
-        input,
-        select {
+        input, select {
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
@@ -93,8 +84,7 @@
             margin: 10px 0;
         }
 
-        th,
-        td {
+        th, td {
             padding: 12px;
             text-align: left;
             border-bottom: 1px solid #eee;
@@ -130,8 +120,7 @@
             transition: all 0.3s;
         }
 
-        .nav-link:hover,
-        .nav-link.active {
+        .nav-link:hover, .nav-link.active {
             background-color: #eef2f7;
             color: #624bb7;
         }
@@ -159,15 +148,6 @@
             background-color: #e9ecef;
         }
 
-        .stats-badge {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 12px;
-            background-color: #dc3545;
-            color: white;
-            font-size: 0.8em;
-        }
-
         .session-item {
             padding: 8px;
             background-color: #eef2f7;
@@ -181,49 +161,6 @@
 
         .session-item:hover {
             background-color: #e2e6ea;
-        }
-
-        .badge {
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 0.8em;
-            background-color: #6c757d;
-            color: white;
-        }
-
-        .stats-good {
-            background-color: #28a745 !important;
-        }
-
-        .stats-medium {
-            background-color: #ffc107 !important;
-        }
-
-        .stats-bad {
-            background-color: #dc3545 !important;
-        }
-
-        .warning-icon {
-            color: #dc3545;
-            font-weight: bold;
-            font-size: 1.2em;
-        }
-
-        .filter-section {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            min-width: 200px;
         }
 
         .badge-circle {
@@ -245,10 +182,6 @@
             background-color: #dc3545;
         }
 
-        .absent-high-badge {
-            background-color: #007bff;
-        }
-
         .excused-badge {
             background-color: #ffc107;
         }
@@ -261,35 +194,15 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
         }
 
-        .person-info {
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .person-name {
-            font-size: 1.2em;
-            font-weight: bold;
-            margin-bottom: 8px;
-            color: #2a1848;
-        }
-
-        .person-meta {
+        .filter-section {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
             display: flex;
             flex-wrap: wrap;
             gap: 15px;
-            font-size: 0.9em;
-            color: #666;
-        }
-
-        .person-meta div {
-            display: flex;
             align-items: center;
-        }
-
-        .person-meta strong {
-            margin-right: 5px;
-            color: #333;
         }
 
         .function-tag {
@@ -303,268 +216,44 @@
             gap: 5px;
         }
 
-        .function-tag .remove-function {
-            background: none;
-            border: none;
-            color: #dc3545;
-            cursor: pointer;
-            font-weight: bold;
-            padding: 0;
-            font-size: 1.1em;
-        }
-
-        .function-controls {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .function-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            margin-top: 10px;
-        }
-
-        .list-assignment {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .list-select {
-            width: 100%;
-        }
-
-        .functions-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .function-card {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .function-card h3 {
-            margin-bottom: 10px;
-        }
-
-        .function-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
-        }
-
-        .session-date-input {
-            position: relative;
-        }
-
-        .session-date-input input {
-            cursor: pointer;
-        }
-
-        .session-date-input::after {
-            content: "";
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            pointer-events: none;
-        }
-
-        .assignment-group {
-            margin-bottom: 15px;
-        }
-
-        .assignment-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        /* Styl dla nowej strony Usprawiedliwienia */
         .excuse-card {
             background-color: #f8f9fa;
             padding: 20px;
             border-radius: 8px;
             margin-bottom: 20px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-        }
-
-        .excuse-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .excuse-card-title {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #2a1848;
-        }
-
-        .excuse-card-date {
-            font-weight: bold;
-            color: #5f4bb7;
-        }
-
-        .excuse-card-body {
-            margin-top: 15px;
-        }
-
-        .excuse-select {
-            width: 100%;
-            height: 150px;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-bottom: 15px;
-        }
-
-        .no-future-sessions {
-            background-color: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-            color: #666;
-        }
-
-        /* Nowy styl dla sekcji funkcji w osobach */
-        .function-section {
-            margin-top: 20px;
-        }
-
-        .function-section-title {
-            font-size: 1.1em;
-            margin-bottom: 10px;
-            color: #2a1848;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 5px;
-        }
-
-        /* Nowe style dla usprawiedliwień */
-        .excuse-card {
-            background-color: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-        }
-
-        .excuse-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .excuse-card-title {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #2a1848;
-        }
-
-        .excuse-card-date {
-            font-weight: bold;
-            color: #5f4bb7;
-        }
-
-        .excuse-card-body {
-            margin-top: 15px;
-        }
-
-        .excuse-select {
-            width: 100%;
-            height: 150px;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-bottom: 15px;
-        }
-
-        .no-future-sessions {
-            background-color: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-            color: #666;
-        }
-
-        .no-groups {
-            color: #dc3545;
-            font-weight: bold;
-        }
-
-        .person-meta div {
-            margin-bottom: 5px;
-        }
-
-        /* Nowe style dla listy osób do usprawiedliwienia */
-        .excuse-list {
-            max-height: 200px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 10px;
-            margin-bottom: 15px;
-        }
-
-        .excuse-item {
-            display: flex;
-            align-items: center;
-            padding: 8px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .excuse-item:last-child {
-            border-bottom: none;
-        }
-
-        .excuse-item input {
-            margin-right: 10px;
-            width: auto;
-        }
-
-        .select-all-buttons {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
         }
 
         .auth-btn {
-          background-color: #4285F4;
-          color: white;
-          border: none;
-          padding: 10px 15px;
-          border-radius: 5px;
-          cursor: pointer;
-          display: inline-block;
-          font-size: 14px;
-          transition: background-color 0.3s;
+            background-color: #4285F4;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-block;
+            font-size: 14px;
+            transition: background-color 0.3s;
         }
         
         .auth-btn:hover {
-          background-color: #3367D6;
+            background-color: #3367D6;
         }
         
+        .connection-status {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            z-index: 1000;
+            background-color: #4CAF50;
+            color: white;
+        }
     </style>
 </head>
-
 <body>
+    <div id="connection-status" class="connection-status">Online</div>
     <header>
         <h1>System sprawdzania obecności</h1>
     </header>
@@ -579,17 +268,18 @@
             <a href="#" class="nav-link" data-page="people">Osoby</a>
             <a href="#" class="nav-link" data-page="excuses">Usprawiedliwienia</a>
             <a href="#" class="nav-link" data-page="stats">Statystyki obecności</a>
+            <a href="#" class="nav-link" data-page="export-import">Eksport/Import</a>
+            
+            <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+                <h2>Autoryzacja</h2>
+                <div id="firebase-auth-container" style="margin-top: 10px;">
+                    <div id="auth-status" style="margin-bottom: 10px;">Nieautoryzowany</div>
+                    <button id="sign-in-btn" class="auth-btn">Zaloguj z Google</button>
+                    <button id="sign-out-btn" class="auth-btn" style="display: none;">Wyloguj</button>
+                </div>
+            </div>
         </nav>
 
-        <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
-          <h2>Autoryzacja Firebase</h2>
-          <div id="firebase-auth-container" style="margin-top: 10px;">
-            <div id="auth-status" style="margin-bottom: 10px;">Nieautoryzowany</div>
-            <button id="sign-in-btn" class="auth-btn">Zaloguj z Google</button>
-            <button id="sign-out-btn" class="auth-btn" style="display: none;">Wyloguj</button>
-          </div>
-        </div>
-        
         <main>
             <!-- Strona: Listy obecności -->
             <div id="lists" class="page active">
@@ -638,13 +328,13 @@
                 </div>
             </div>
 
-            <!-- Strona: Osoby (zaktualizowana) -->
+            <!-- Strona: Osoby -->
             <div id="people" class="page">
                 <h2>Osoby</h2>
                 <div id="people-details-container"></div>
             </div>
 
-            <!-- Nowa strona: Usprawiedliwienia -->
+            <!-- Strona: Usprawiedliwienia -->
             <div id="excuses" class="page">
                 <h2>Usprawiedliwienia</h2>
                 <div id="future-sessions-container"></div>
@@ -653,8 +343,6 @@
             <!-- Strona: Zarządzanie listą -->
             <div id="manage-list" class="page">
                 <h2 id="current-list-name">Zarządzanie listą</h2>
-
-                <!-- Sekcja sesji na górze -->
                 <div>
                     <h3>Sesje obecności</h3>
                     <div class="session-date-input">
@@ -664,18 +352,13 @@
                     </div>
                     <div id="sessions-container" style="margin-top: 20px;"></div>
                 </div>
-
-                <!-- Sekcja dodawania osób -->
                 <div>
                     <h3>Dodaj osobę do listy</h3>
                     <select id="person-to-add">
                         <option value="">Wybierz osobę</option>
-                        <!-- Opcje będą dodawane dynamicznie -->
                     </select>
                     <button id="add-person-to-list">Dodaj osobę do listy</button>
                 </div>
-
-                <!-- Sekcja osób na liście -->
                 <div>
                     <h3>Osoby na liście</h3>
                     <table id="people-list">
@@ -693,7 +376,6 @@
             <!-- Strona: Statystyki obecności -->
             <div id="stats" class="page">
                 <h2>Statystyki obecności</h2>
-
                 <div class="filter-section">
                     <div class="filter-group">
                         <label for="period">Okres:</label>
@@ -705,18 +387,14 @@
                             <option value="6">Ostatnie 6 miesięcy</option>
                         </select>
                     </div>
-
                     <div class="filter-group">
                         <label for="list-filter">Lista:</label>
                         <select id="list-filter">
                             <option value="all">Wszystkie listy</option>
-                            <!-- Opcje będą dodawane dynamicznie -->
                         </select>
                     </div>
-
                     <button id="apply-filter">Zastosuj filtr</button>
                 </div>
-
                 <table>
                     <thead>
                         <tr>
@@ -730,11 +408,53 @@
                     <tbody id="stats-body"></tbody>
                 </table>
             </div>
+
+            <!-- Strona: Eksport/Import -->
+            <div id="export-import" class="page">
+                <h2>Eksport i import danych</h2>
+                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 300px; background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                        <h3>Eksport danych</h3>
+                        <p>Eksportuj wszystkie dane do pliku JSON.</p>
+                        <button id="export-data" style="margin-top: 15px;">Eksportuj dane</button>
+                        <div id="export-result" style="margin-top: 15px;"></div>
+                    </div>
+                    <div style="flex: 1; min-width: 300px; background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                        <h3>Import danych</h3>
+                        <p>Zaimportuj dane z pliku JSON.</p>
+                        <input type="file" id="import-file" accept=".json" style="margin: 15px 0;">
+                        <button id="import-data">Importuj dane</button>
+                        <div id="import-result" style="margin-top: 15px;"></div>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
 
     <script>
-        // Struktura danych
+        // =============================================
+        // KONFIGURACJA FIREBASE
+        // =============================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyBi1f47qdude_3zl8vziTlFhVH0xx3J04U",
+            authDomain: "projekt-1-974cc.firebaseapp.com",
+            databaseURL: "https://projekt-1-974cc-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "projekt-1-974cc",
+            storageBucket: "projekt-1-974cc.appspot.com",
+            messagingSenderId: "537046472561",
+            appId: "1:537046472561:web:bd17ffd942f6500a52c8d0",
+            measurementId: "G-BJN98JBYJK"
+        };
+
+        // Inicjalizacja Firebase
+        firebase.initializeApp(firebaseConfig);
+        const firebaseAuth = firebase.auth();
+        const firebaseDatabase = firebase.database();
+        const googleProvider = new firebase.auth.GoogleAuthProvider();
+
+        // =============================================
+        // STAN APLIKACJI I DANE
+        // =============================================
         let attendanceData = {
             lists: JSON.parse(localStorage.getItem('attendanceLists')) || [],
             globalPeople: JSON.parse(localStorage.getItem('globalPeople')) || [],
@@ -742,29 +462,151 @@
             functions: JSON.parse(localStorage.getItem('globalFunctions')) || []
         };
 
-        // Stan aplikacji
         let currentState = {
             activeListId: null,
             currentSession: null
         };
 
-        // Inicjalizacja
-        document.addEventListener('DOMContentLoaded', () => {
+        let dbRef = null;
+
+        // =============================================
+        // OBSŁUGA FIREBASE AUTH
+        // =============================================
+        function signIn() {
+            firebaseAuth.signInWithPopup(googleProvider)
+                .then((result) => {
+                    const user = result.user;
+                    console.log("Zalogowano jako:", user.email);
+                    initDatabase(user);
+                })
+                .catch((error) => {
+                    console.error("Błąd logowania:", error);
+                    alert(`Błąd logowania: ${error.message}`);
+                });
+        }
+
+        function signOut() {
+            firebaseAuth.signOut()
+                .then(() => {
+                    console.log("Wylogowano");
+                    dbRef = null;
+                })
+                .catch((error) => {
+                    console.error("Błąd wylogowywania:", error);
+                });
+        }
+
+        firebaseAuth.onAuthStateChanged((user) => {
+            const authStatus = document.getElementById('auth-status');
+            const signInBtn = document.getElementById('sign-in-btn');
+            const signOutBtn = document.getElementById('sign-out-btn');
+            
+            if (user) {
+                authStatus.innerHTML = `Zalogowany jako: <strong>${user.email}</strong>`;
+                signInBtn.style.display = 'none';
+                signOutBtn.style.display = 'block';
+                initDatabase(user);
+            } else {
+                authStatus.textContent = "Nieautoryzowany";
+                signInBtn.style.display = 'block';
+                signOutBtn.style.display = 'none';
+            }
+        });
+
+        // =============================================
+        // SYNCHRONIZACJA Z FIREBASE
+        // =============================================
+        function initDatabase(user) {
+            if (!user) return;
+            
+            dbRef = firebaseDatabase.ref(`users/${user.uid}/attendanceSystem`);
+            
+            // Nasłuchuj zmian w bazie danych
+            dbRef.on('value', (snapshot) => {
+                const remoteData = snapshot.val();
+                if (remoteData) {
+                    processRemoteData(remoteData);
+                }
+            });
+            
+            // Wykonaj początkową synchronizację
+            syncData();
+        }
+
+        function processRemoteData(remoteData) {
+            const localLastUpdated = localStorage.getItem('lastUpdated') || 0;
+            
+            if (remoteData.lastUpdated > localLastUpdated) {
+                console.log("Aktualizuję dane z Firebase");
+                attendanceData = {
+                    lists: remoteData.lists || [],
+                    globalPeople: remoteData.globalPeople || [],
+                    personDetails: remoteData.personDetails || {},
+                    functions: remoteData.functions || []
+                };
+                
+                saveLocalData();
+                renderAll();
+            }
+        }
+
+        function syncData() {
+            if (!dbRef) return;
+            
+            const dataToSave = {
+                lists: attendanceData.lists,
+                globalPeople: attendanceData.globalPeople,
+                personDetails: attendanceData.personDetails,
+                functions: attendanceData.functions,
+                lastUpdated: firebase.database.ServerValue.TIMESTAMP
+            };
+            
+            dbRef.set(dataToSave)
+                .then(() => console.log("Dane zsynchronizowane z Firebase"))
+                .catch(error => console.error("Błąd synchronizacji:", error));
+        }
+
+        // =============================================
+        // FUNKCJE POMOCNICZE
+        // =============================================
+        function saveLocalData() {
+            localStorage.setItem('attendanceLists', JSON.stringify(attendanceData.lists));
+            localStorage.setItem('globalPeople', JSON.stringify(attendanceData.globalPeople));
+            localStorage.setItem('personDetails', JSON.stringify(attendanceData.personDetails));
+            localStorage.setItem('globalFunctions', JSON.stringify(attendanceData.functions));
+            localStorage.setItem('lastUpdated', Date.now());
+        }
+
+        function saveData() {
+            saveLocalData();
+            syncData();
+        }
+
+        function renderAll() {
             renderLists();
             renderGlobalPeople();
             renderFunctions();
-            setupNavigation();
-            setupEventListeners();
             renderListFilterOptions();
+            renderListPeopleOptions();
+            renderPeopleDetails();
+            
+            if (document.getElementById('manage-list').classList.contains('active')) {
+                renderSessions();
+                renderPeopleList();
+            }
+            
+            if (document.getElementById('stats').classList.contains('active')) {
+                renderStats();
+            }
+            
+            if (document.getElementById('excuses').classList.contains('active')) {
+                renderFutureSessions();
+            }
+        }
 
-            // Dodaj obsługę klawisza Enter
-            setupKeyboardShortcuts();
-
-            // Automatycznie otwórz kalendarz przy dodawaniu sesji
-            setupSessionDateInput();
-        });
-
-        // Renderowanie list
+        // =============================================
+        // IMPLEMENTACJA FUNKCJI APLIKACJI
+        // =============================================
         function renderLists() {
             const container = document.getElementById('list-container');
             container.innerHTML = '';
@@ -795,7 +637,6 @@
                 `;
                 container.appendChild(listElement);
 
-                // Kliknięcie na listę otwiera ją
                 listElement.addEventListener('click', (e) => {
                     if (!e.target.classList.contains('delete-list')) {
                         openList(list.id);
@@ -803,7 +644,6 @@
                 });
             });
 
-            // Dodaj obsługę usuwania list
             document.querySelectorAll('.delete-list').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -813,7 +653,6 @@
             });
         }
 
-        // Renderowanie osób globalnych
         function renderGlobalPeople() {
             const container = document.getElementById('global-people-list');
             container.innerHTML = '';
@@ -835,13 +674,11 @@
                 container.appendChild(li);
             });
 
-            // Dodaj obsługę usuwania osób globalnych
             document.querySelectorAll('.remove-global-person').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const index = parseInt(e.target.dataset.index);
                     const person = attendanceData.globalPeople[index];
 
-                    // Usuń osobę ze wszystkich list
                     attendanceData.lists.forEach(list => {
                         if (list.people) {
                             const personIndex = list.people.indexOf(person);
@@ -851,12 +688,8 @@
                         }
                     });
 
-                    // Usuń osobę z globalnej listy
                     attendanceData.globalPeople.splice(index, 1);
-
-                    // Usuń szczegóły osoby
                     delete attendanceData.personDetails[person];
-
                     saveData();
                     renderGlobalPeople();
                     renderListPeopleOptions();
@@ -866,7 +699,6 @@
             });
         }
 
-        // Renderowanie funkcji
         function renderFunctions() {
             const container = document.getElementById('functions-list');
             container.innerHTML = '';
@@ -884,17 +716,14 @@
                     <div>${func}</div>
                     <button class="remove-function" data-index="${index}">Usuń</button>
                 `;
-
                 container.appendChild(funcElement);
             });
 
-            // Dodaj obsługę usuwania funkcji
             document.querySelectorAll('.remove-function').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const index = parseInt(e.target.dataset.index);
                     const functionName = attendanceData.functions[index];
 
-                    // Usuń funkcję ze wszystkich osób
                     for (const person in attendanceData.personDetails) {
                         const details = attendanceData.personDetails[person];
                         if (details.functions) {
@@ -905,9 +734,7 @@
                         }
                     }
 
-                    // Usuń funkcję z listy globalnej
                     attendanceData.functions.splice(index, 1);
-
                     saveData();
                     renderFunctions();
                     renderPeopleDetails();
@@ -915,7 +742,6 @@
             });
         }
 
-        // Renderowanie szczegółów osób (zaktualizowane)
         function renderPeopleDetails() {
             const container = document.getElementById('people-details-container');
             container.innerHTML = '';
@@ -929,12 +755,10 @@
                 const detailElement = document.createElement('div');
                 detailElement.className = 'person-detail-row';
 
-                // Znajdź listy, w których jest osoba
                 const lists = attendanceData.lists.filter(list =>
                     list.people && list.people.includes(person)
                 ).map(list => list.name);
 
-                // Funkcje osoby
                 const functions = attendanceData.personDetails[person]?.functions || [];
 
                 detailElement.innerHTML = `
@@ -944,7 +768,6 @@
                             <div><strong>Podzespoły:</strong> ${lists.join(', ') || 'Brak'}</div>
                         </div>
                     </div>
-                    
                     <div class="function-section">
                         <div class="function-section-title">Przypisane funkcje</div>
                         <div class="function-list">
@@ -955,7 +778,6 @@
                                 </span>
                             `).join('')}
                         </div>
-                        
                         <div class="function-controls">
                             <select class="function-select" data-person="${person}">
                                 <option value="">Wybierz funkcję</option>
@@ -967,11 +789,9 @@
                         </div>
                     </div>
                 `;
-
                 container.appendChild(detailElement);
             });
 
-            // Dodaj obsługę przypisywania funkcji
             document.querySelectorAll('.assign-function').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const person = e.target.dataset.person;
@@ -997,7 +817,6 @@
                 });
             });
 
-            // Dodaj obsługę usuwania funkcji
             document.querySelectorAll('.function-tag .remove-function').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const person = e.target.dataset.person;
@@ -1015,7 +834,6 @@
             });
         }
 
-        // Renderowanie opcji dla listy osób w statystykach
         function renderListFilterOptions() {
             const select = document.getElementById('list-filter');
             select.innerHTML = '<option value="all">Wszystkie listy</option>';
@@ -1028,7 +846,6 @@
             });
         }
 
-        // Renderowanie opcji dla listy osób w zarządzaniu listą
         function renderListPeopleOptions() {
             const select = document.getElementById('person-to-add');
             select.innerHTML = '<option value="">Wybierz osobę</option>';
@@ -1041,28 +858,23 @@
             });
         }
 
-        // Obsługa nawigacji
         function setupNavigation() {
             document.querySelectorAll('.nav-link').forEach(link => {
                 link.addEventListener('click', (e) => {
                     e.preventDefault();
                     const pageId = e.target.dataset.page;
 
-                    // Ukryj wszystkie strony
                     document.querySelectorAll('.page').forEach(page => {
                         page.classList.remove('active');
                     });
 
-                    // Usuń aktywną klasę z linków
                     document.querySelectorAll('.nav-link').forEach(link => {
                         link.classList.remove('active');
                     });
 
-                    // Pokaż wybraną stronę
                     document.getElementById(pageId).classList.add('active');
                     e.target.classList.add('active');
 
-                    // Odśwież zawartość strony
                     if (pageId === 'stats') {
                         renderStats();
                     } else if (pageId === 'global-people') {
@@ -1075,42 +887,39 @@
                         renderFunctions();
                     } else if (pageId === 'excuses') {
                         renderFutureSessions();
+                    } else if (pageId === 'export-import') {
+                        document.getElementById('export-result').innerHTML = '';
+                        document.getElementById('import-result').innerHTML = '';
                     }
                 });
             });
         }
 
-        // Ustawianie skrótów klawiaturowych
         function setupKeyboardShortcuts() {
-            // Enter przy tworzeniu listy
             document.getElementById('list-name').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     document.getElementById('create-list').click();
                 }
             });
 
-            // Enter przy dodawaniu osoby globalnej
             document.getElementById('new-global-person').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     document.getElementById('add-global-person').click();
                 }
             });
 
-            // Enter przy dodawaniu sesji
             document.getElementById('session-date').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     document.getElementById('add-session').click();
                 }
             });
 
-            // Enter przy dodawaniu osoby do listy
             document.getElementById('person-to-add').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     document.getElementById('add-person-to-list').click();
                 }
             });
 
-            // Enter przy dodawaniu funkcji
             document.getElementById('new-function').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     document.getElementById('add-function').click();
@@ -1118,22 +927,14 @@
             });
         }
 
-        // Ustawienie kalendarza dla sesji
         function setupSessionDateInput() {
             const dateInput = document.getElementById('session-date');
-
-            // Ustaw dzisiejszą datę jako domyślną
             const today = new Date().toISOString().split('T')[0];
             dateInput.value = today;
-
-            // Automatycznie otwórz kalendarz
             dateInput.focus();
-            dateInput.click();
         }
 
-        // Nasłuchiwanie zdarzeń
         function setupEventListeners() {
-            // Tworzenie nowej listy
             document.getElementById('create-list').addEventListener('click', () => {
                 const listName = document.getElementById('list-name').value.trim();
                 if (!listName) {
@@ -1156,7 +957,6 @@
                 alert(`Utworzono nową listę: ${listName}`);
             });
 
-            // Dodawanie osoby globalnej
             document.getElementById('add-global-person').addEventListener('click', () => {
                 const name = document.getElementById('new-global-person').value.trim();
                 if (!name) {
@@ -1171,7 +971,6 @@
 
                 attendanceData.globalPeople.push(name);
 
-                // Inicjalizuj szczegóły osoby
                 if (!attendanceData.personDetails[name]) {
                     attendanceData.personDetails[name] = { functions: [] };
                 }
@@ -1182,7 +981,6 @@
                 document.getElementById('new-global-person').value = '';
             });
 
-            // Dodawanie funkcji
             document.getElementById('add-function').addEventListener('click', () => {
                 const functionName = document.getElementById('new-function').value.trim();
                 if (!functionName) {
@@ -1201,7 +999,6 @@
                 document.getElementById('new-function').value = '';
             });
 
-            // Dodawanie osoby do listy
             document.getElementById('add-person-to-list').addEventListener('click', () => {
                 const person = document.getElementById('person-to-add').value.trim();
                 if (!person) {
@@ -1225,7 +1022,6 @@
                 }
             });
 
-            // Dodawanie sesji
             document.getElementById('add-session').addEventListener('click', () => {
                 const date = document.getElementById('session-date').value;
                 if (!date) {
@@ -1236,7 +1032,6 @@
                 const list = attendanceData.lists.find(l => l.id === currentState.activeListId);
                 if (!list) return;
 
-                // Sprawdź czy sesja już istnieje
                 if (list.sessions.some(s => s.date === date)) {
                     alert('Sesja dla tej daty już istnieje!');
                     return;
@@ -1247,7 +1042,6 @@
                     attendance: {}
                 };
 
-                // Domyślnie wszyscy obecni
                 if (list.people) {
                     list.people.forEach(person => {
                         newSession.attendance[person] = 'present';
@@ -1258,16 +1052,12 @@
                 list.sessions.push(newSession);
                 saveData();
                 renderSessions();
-
-                // Automatycznie otwórz kalendarz ponownie
                 setupSessionDateInput();
             });
 
-            // Filtrowanie statystyk
             document.getElementById('apply-filter').addEventListener('click', renderStats);
         }
 
-        // Otwieranie listy
         function openList(listId) {
             const list = attendanceData.lists.find(l => l.id === listId);
             if (!list) return;
@@ -1275,18 +1065,15 @@
             currentState.activeListId = listId;
             document.getElementById('current-list-name').textContent = `Zarządzanie listą: ${list.name}`;
 
-            // Przełącz na stronę zarządzania
             document.querySelectorAll('.page').forEach(page => {
                 page.classList.remove('active');
             });
             document.getElementById('manage-list').classList.add('active');
 
-            // Aktualizuj menu
             document.querySelectorAll('.nav-link').forEach(link => {
                 link.classList.remove('active');
             });
 
-            // Inicjalizuj puste listy jeśli nie istnieją
             if (!list.people) list.people = [];
             if (!list.sessions) list.sessions = [];
 
@@ -1295,7 +1082,6 @@
             renderSessions();
         }
 
-        // Renderowanie listy osób
         function renderPeopleList() {
             const list = attendanceData.lists.find(l => l.id === currentState.activeListId);
             if (!list) return;
@@ -1314,13 +1100,11 @@
                 tbody.appendChild(row);
             });
 
-            // Dodaj obsługę usuwania osób
             document.querySelectorAll('.remove-person').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const index = parseInt(e.target.dataset.index);
                     const person = list.people[index];
 
-                    // Usuń osobę ze wszystkich sesji
                     list.sessions.forEach(session => {
                         if (session.attendance[person]) {
                             delete session.attendance[person];
@@ -1336,7 +1120,6 @@
             });
         }
 
-        // Otwieranie sesji
         function openSession(sessionIndex) {
             const list = attendanceData.lists.find(l => l.id === currentState.activeListId);
             if (!list || !list.sessions[sessionIndex]) return;
@@ -1344,7 +1127,6 @@
             currentState.currentSession = sessionIndex;
             const session = list.sessions[sessionIndex];
 
-            // Utwórz okno modalne do zarządzania sesją
             const modal = document.createElement('div');
             modal.style.position = 'fixed';
             modal.style.top = '0';
@@ -1372,7 +1154,6 @@
                     <button id="close-modal" style="background: none; border: none; font-size: 1.5em; cursor: pointer;">×</button>
                 </div>
                 <p>Lista: ${list.name}</p>
-                
                 <table>
                     <thead>
                         <tr>
@@ -1390,7 +1171,6 @@
             modal.appendChild(modalContent);
             document.body.appendChild(modal);
 
-            // Wypełnij tabelę obecności
             const tbody = document.getElementById('session-attendance-body');
             tbody.innerHTML = '';
 
@@ -1411,12 +1191,10 @@
                 tbody.appendChild(row);
             });
 
-            // Obsługa zamknięcia modala
             document.getElementById('close-modal').addEventListener('click', () => {
                 document.body.removeChild(modal);
             });
 
-            // Zapisywanie zmian w sesji
             document.getElementById('save-session').addEventListener('click', () => {
                 document.querySelectorAll('.person-attendance').forEach(select => {
                     const person = select.dataset.person;
@@ -1431,7 +1209,6 @@
             });
         }
 
-        // Renderowanie statystyk
         function renderStats() {
             const tbody = document.getElementById('stats-body');
             tbody.innerHTML = '';
@@ -1453,9 +1230,7 @@
 
             const stats = {};
 
-            // Przejdź przez wszystkie listy i sesje
             attendanceData.lists.forEach(list => {
-                // Pomijaj jeśli filtr jest ustawiony na konkretną listę
                 if (listFilter !== 'all' && list.id !== listFilter) {
                     return;
                 }
@@ -1464,14 +1239,12 @@
                     list.sessions.forEach(session => {
                         const sessionDate = new Date(session.date);
 
-                        // Jeśli wybrano okres, sprawdź czy sesja mieści się w przedziale
                         if (period !== 'all' && sessionDate < periodStart) {
                             return;
                         }
 
                         if (session.attendance) {
                             Object.entries(session.attendance).forEach(([person, status]) => {
-                                // Klucz tylko po imieniu i nazwisku
                                 if (!stats[person]) {
                                     stats[person] = {
                                         person: person,
@@ -1494,17 +1267,11 @@
                 }
             });
 
-            // Konwertuj na tablicę i sortuj
             const statsArray = Object.values(stats).sort((a, b) => b.absent - a.absent);
 
-            // Wyświetl statystyki
             statsArray.forEach(data => {
                 const row = document.createElement('tr');
-
-                // Dodaj ostrzeżenie jeśli nieobecności >= 3
                 const warning = data.absent >= 3 ? '<span class="warning-icon">⚠️</span>' : '';
-
-                // Określ klasę dla nieobecności
                 const absentClass = data.absent < 3 ? 'absent-badge' : 'absent-high-badge';
 
                 row.innerHTML = `
@@ -1528,7 +1295,6 @@
             }
         }
 
-        // Usuwanie listy
         function deleteList(listId) {
             if (!confirm('Czy na pewno chcesz usunąć tę listę?')) return;
 
@@ -1539,158 +1305,6 @@
             renderPeopleDetails();
         }
 
-        // Zapisywanie danych
-        function saveData() {
-            localStorage.setItem('attendanceLists', JSON.stringify(attendanceData.lists));
-            localStorage.setItem('globalPeople', JSON.stringify(attendanceData.globalPeople));
-            localStorage.setItem('personDetails', JSON.stringify(attendanceData.personDetails));
-            localStorage.setItem('globalFunctions', JSON.stringify(attendanceData.functions));
-        }
-
-        // Renderowanie przyszłych sesji dla usprawiedliwień
-        function renderFutureSessions() {
-            const container = document.getElementById('future-sessions-container');
-            container.innerHTML = '';
-
-            const today = new Date().toISOString().split('T')[0];
-            let hasFutureSessions = false;
-
-            attendanceData.lists.forEach(list => {
-                if (list.sessions) {
-                    list.sessions.forEach(session => {
-                        if (session.date >= today) {
-                            hasFutureSessions = true;
-
-                            const excuseCard = document.createElement('div');
-                            excuseCard.className = 'excuse-card';
-
-                            excuseCard.innerHTML = `
-                                <div class="excuse-card-header">
-                                    <div class="excuse-card-title">${list.name}</div>
-                                    <div class="excuse-card-date">${session.date}</div>
-                                </div>
-                                <div class="excuse-card-body">
-                                    <label for="excuse-select-${list.id}-${session.date}">Osoby do usprawiedliwienia:</label>
-                                    <select class="excuse-select" id="excuse-select-${list.id}-${session.date}" multiple>
-                                        ${list.people ? list.people.map(person => {
-                                const isExcused = session.attendance[person] === 'excused';
-                                return `<option value="${person}" ${isExcused ? 'selected' : ''}>${person}</option>`;
-                            }).join('') : ''}
-                                    </select>
-                                    <button class="save-excuse" data-list="${list.id}" data-date="${session.date}">Zapisz usprawiedliwienia</button>
-                                </div>
-                            `;
-
-                            container.appendChild(excuseCard);
-                        }
-                    });
-                }
-            });
-
-            if (!hasFutureSessions) {
-                container.innerHTML = `
-                    <div class="no-future-sessions">
-                        <p>Brak nadchodzących sesji.</p>
-                        <p>Dodaj sesje z przyszłymi datami w zakładce "Listy obecności".</p>
-                    </div>
-                `;
-            }
-
-            // Dodaj obsługę zapisywania usprawiedliwień
-            document.querySelectorAll('.save-excuse').forEach(btn => {
-                btn.addEventListener('click', function () {
-                    const listId = this.dataset.list;
-                    const sessionDate = this.dataset.date;
-                    const select = this.previousElementSibling;
-                    const selectedPersons = Array.from(select.selectedOptions).map(opt => opt.value);
-
-                    // Znajdź sesję
-                    const list = attendanceData.lists.find(l => l.id === listId);
-                    if (!list || !list.sessions) return;
-
-                    const session = list.sessions.find(s => s.date === sessionDate);
-                    if (!session) return;
-
-                    // Zaktualizuj status obecności
-                    list.people.forEach(person => {
-                        if (selectedPersons.includes(person)) {
-                            session.attendance[person] = 'excused';
-                        } else if (session.attendance[person] === 'excused') {
-                            // Jeśli osoba była usprawiedliwiona, ale teraz nie jest wybrana
-                            session.attendance[person] = 'present';
-                        }
-                    });
-
-                    saveData();
-                    alert('Zapisano usprawiedliwienia!');
-                });
-            });
-        }
-
-        // Renderowanie szczegółów osób (zaktualizowane)
-        function renderPeopleDetails() {
-            const container = document.getElementById('people-details-container');
-            container.innerHTML = '';
-
-            if (attendanceData.globalPeople.length === 0) {
-                container.innerHTML = '<p>Brak osób. Dodaj nowe osoby w zakładce "Dodawanie osób".</p>';
-                return;
-            }
-
-            attendanceData.globalPeople.forEach(person => {
-                const detailElement = document.createElement('div');
-                detailElement.className = 'person-detail-row';
-
-                // Znajdź listy, w których jest osoba
-                const lists = attendanceData.lists.filter(list =>
-                    list.people && list.people.includes(person)
-                ).map(list => list.name);
-
-                // Funkcje osoby
-                const functions = attendanceData.personDetails[person]?.functions || [];
-
-                // Formatowanie wyświetlania list (podświetlenie "Brak")
-                const listsDisplay = lists.length > 0
-                    ? lists.join(', ')
-                    : '<span class="no-groups">Brak</span>';
-
-                detailElement.innerHTML = `
-                    <div class="person-info">
-                        <div class="person-name">${person}</div>
-                        <div class="person-meta">
-                            <div><strong>Podzespoły:</strong> ${listsDisplay}</div>
-                        </div>
-                    </div>
-                    
-                    <div class="function-section">
-                        <div class="function-section-title">Przypisane funkcje</div>
-                        <div class="function-list">
-                            ${functions.map(func => `
-                                <span class="function-tag">
-                                    ${func}
-                                    <button class="remove-function" data-person="${person}" data-function="${func}">×</button>
-                                </span>
-                            `).join('')}
-                        </div>
-                        
-                        <div class="function-controls">
-                            <select class="function-select" data-person="${person}">
-                                <option value="">Wybierz funkcję</option>
-                                ${attendanceData.functions.map(func => `
-                                    <option value="${func}">${func}</option>
-                                `).join('')}
-                            </select>
-                            <button class="assign-function" data-person="${person}">Przypisz funkcję</button>
-                        </div>
-                    </div>
-                `;
-
-                container.appendChild(detailElement);
-            });
-
-        }
-
-        // Renderowanie sesji (z sortowaniem)
         function renderSessions() {
             const container = document.getElementById('sessions-container');
             container.innerHTML = '';
@@ -1703,7 +1317,6 @@
                 return;
             }
 
-            // Sortuj sesje malejąco po dacie (najnowsze na górze)
             list.sessions.sort((a, b) => new Date(b.date) - new Date(a.date));
 
             list.sessions.forEach((session, index) => {
@@ -1711,7 +1324,6 @@
                 sessionElement.className = 'session-item';
                 sessionElement.dataset.index = index;
 
-                // Oblicz statystyki obecności
                 let presentCount = 0;
                 let absentCount = 0;
                 let excusedCount = 0;
@@ -1739,7 +1351,6 @@
                 `;
                 container.appendChild(sessionElement);
 
-                // Kliknięcie na sesję otwiera zarządzanie nią
                 sessionElement.addEventListener('click', (e) => {
                     if (!e.target.classList.contains('delete-session')) {
                         openSession(index);
@@ -1747,7 +1358,6 @@
                 });
             });
 
-            // Dodaj obsługę usuwania sesji
             document.querySelectorAll('.delete-session').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -1761,7 +1371,6 @@
             });
         }
 
-        // Renderowanie przyszłych sesji dla usprawiedliwień (zaktualizowane)
         function renderFutureSessions() {
             const container = document.getElementById('future-sessions-container');
             container.innerHTML = '';
@@ -1775,11 +1384,9 @@
                         if (session.date >= today) {
                             hasFutureSessions = true;
 
+                            const containerId = `excuse-container-${list.id}-${session.date}`;
                             const excuseCard = document.createElement('div');
                             excuseCard.className = 'excuse-card';
-
-                            // Generuj unikalny identyfikator dla kontenera osób
-                            const containerId = `excuse-container-${list.id}-${session.date}`;
 
                             excuseCard.innerHTML = `
                                 <div class="excuse-card-header">
@@ -1788,12 +1395,10 @@
                                 </div>
                                 <div class="excuse-card-body">
                                     <label>Osoby do usprawiedliwienia:</label>
-                                    
                                     <div class="select-all-buttons">
                                         <button class="select-all-btn" data-container="${containerId}">Zaznacz wszystkie</button>
                                         <button class="deselect-all-btn" data-container="${containerId}">Odznacz wszystkie</button>
                                     </div>
-                                    
                                     <div id="${containerId}" class="excuse-list">
                                         ${list.people ? list.people.map(person => {
                                 const isExcused = session.attendance[person] === 'excused';
@@ -1825,20 +1430,16 @@
                 `;
             }
 
-            // Dodaj obsługę zapisywania usprawiedliwień
             document.querySelectorAll('.save-excuse').forEach(btn => {
                 btn.addEventListener('click', function () {
                     const listId = this.dataset.list;
                     const sessionDate = this.dataset.date;
-
-                    // Znajdź sesję
                     const list = attendanceData.lists.find(l => l.id === listId);
                     if (!list || !list.sessions) return;
 
                     const session = list.sessions.find(s => s.date === sessionDate);
                     if (!session) return;
 
-                    // Zbierz wszystkie zaznaczone osoby
                     const selectedPersons = [];
                     const checkboxes = document.querySelectorAll(`input[type="checkbox"][value][id^="excuse-${listId}-${sessionDate}"]`);
                     checkboxes.forEach(checkbox => {
@@ -1847,12 +1448,10 @@
                         }
                     });
 
-                    // Zaktualizuj status obecności
                     list.people.forEach(person => {
                         if (selectedPersons.includes(person)) {
                             session.attendance[person] = 'excused';
                         } else if (session.attendance[person] === 'excused') {
-                            // Jeśli osoba była usprawiedliwiona, ale teraz nie jest wybrana
                             session.attendance[person] = 'present';
                         }
                     });
@@ -1862,7 +1461,6 @@
                 });
             });
 
-            // Dodaj obsługę przycisków "Zaznacz wszystkie" i "Odznacz wszystkie"
             document.querySelectorAll('.select-all-btn').forEach(btn => {
                 btn.addEventListener('click', function () {
                     const containerId = this.dataset.container;
@@ -1885,61 +1483,13 @@
                 });
             });
         }
-        
+
         // =============================================
-        // EKSPORT I IMPORT DANYCH (SYNCHRONIZACJA)
+        // EKSPORT/IMPORT DANYCH
         // =============================================
-        
-        // Dodanie pozycji w menu
-        const navMenu = document.querySelector('nav');
-        const syncMenuItem = `
-            <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
-                <h2>Synchronizacja</h2>
-                <a href="#" class="nav-link" data-page="export-import">Eksport/Import</a>
-            </div>
-        `;
-        navMenu.insertAdjacentHTML('beforeend', syncMenuItem);
-        
-        // Dodanie strony eksportu/importu
-        const mainElement = document.querySelector('main');
-        const exportImportPage = `
-            <div id="export-import" class="page">
-                <h2>Eksport i import danych</h2>
-                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-                    <div style="flex: 1; min-width: 300px; background: #f8f9fa; padding: 20px; border-radius: 10px;">
-                        <h3>Eksport danych</h3>
-                        <p>Eksportuj wszystkie dane do pliku JSON. Możesz go zapisać i zaimportować na innym urządzeniu.</p>
-                        <button id="export-data" style="margin-top: 15px;">Eksportuj dane</button>
-                        <div id="export-result" style="margin-top: 15px; word-break: break-all;"></div>
-                    </div>
-                    
-                    <div style="flex: 1; min-width: 300px; background: #f8f9fa; padding: 20px; border-radius: 10px;">
-                        <h3>Import danych</h3>
-                        <p>Zaimportuj dane z pliku JSON (zastąpią one obecne dane w przeglądarce).</p>
-                        <input type="file" id="import-file" accept=".json" style="margin: 15px 0;">
-                        <button id="import-data">Importuj dane</button>
-                        <div id="import-result" style="margin-top: 15px;"></div>
-                    </div>
-                </div>
-            </div>
-        `;
-        mainElement.insertAdjacentHTML('beforeend', exportImportPage);
-        
-        // Funkcja eksportu danych
-        document.getElementById('export-data')?.addEventListener('click', () => {
-            const dataToExport = {
-                lists: JSON.parse(localStorage.getItem('attendanceLists')) || [],
-                globalPeople: JSON.parse(localStorage.getItem('globalPeople')) || [],
-                personDetails: JSON.parse(localStorage.getItem('personDetails')) || {},
-                functions: JSON.parse(localStorage.getItem('globalFunctions')) || [],
-                version: 1.0,
-                exportedAt: new Date().toISOString()
-            };
-            
+        document.getElementById('export-data').addEventListener('click', () => {
+            const dataToExport = { ...attendanceData };
             const dataStr = JSON.stringify(dataToExport, null, 2);
-            const exportResult = document.getElementById('export-result');
-            
-            // Tworzenie pliku do pobrania
             const blob = new Blob([dataStr], {type: 'application/json'});
             const url = URL.createObjectURL(blob);
             
@@ -1951,18 +1501,11 @@
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
             
-            // Pokazanie danych na ekranie
-            exportResult.innerHTML = `
-                <p style="color: green;">Dane wyeksportowane pomyślnie!</p>
-                <details style="margin-top: 10px;">
-                    <summary>Pokaż dane</summary>
-                    <pre style="background: white; padding: 10px; border-radius: 5px; max-height: 200px; overflow: auto;">${dataStr}</pre>
-                </details>
-            `;
+            document.getElementById('export-result').innerHTML = 
+                '<p style="color: green;">Dane wyeksportowane pomyślnie!</p>';
         });
-        
-        // Funkcja importu danych
-        document.getElementById('import-data')?.addEventListener('click', () => {
+
+        document.getElementById('import-data').addEventListener('click', () => {
             const fileInput = document.getElementById('import-file');
             const importResult = document.getElementById('import-result');
             
@@ -1978,37 +1521,14 @@
                 try {
                     const importedData = JSON.parse(e.target.result);
                     
-                    // Walidacja danych
-                    if (!importedData.lists || !importedData.globalPeople || !importedData.personDetails || !importedData.functions) {
-                        throw new Error('Nieprawidłowy format pliku');
-                    }
-                    
                     if (!confirm('Czy na pewno chcesz zaimportować dane? Wszystkie bieżące dane zostaną nadpisane.')) {
                         importResult.innerHTML = '<p style="color: orange;">Import anulowany</p>';
                         return;
                     }
                     
-                    // Zapis danych
-                    localStorage.setItem('attendanceLists', JSON.stringify(importedData.lists));
-                    localStorage.setItem('globalPeople', JSON.stringify(importedData.globalPeople));
-                    localStorage.setItem('personDetails', JSON.stringify(importedData.personDetails));
-                    localStorage.setItem('globalFunctions', JSON.stringify(importedData.functions));
-                    
-                    // Aktualizacja stanu aplikacji
-                    attendanceData = {
-                        lists: importedData.lists,
-                        globalPeople: importedData.globalPeople,
-                        personDetails: importedData.personDetails,
-                        functions: importedData.functions
-                    };
-                    
-                    // Odświeżenie UI
-                    renderLists();
-                    renderGlobalPeople();
-                    renderFunctions();
-                    renderListFilterOptions();
-                    renderListPeopleOptions();
-                    renderPeopleDetails();
+                    attendanceData = importedData;
+                    saveData();
+                    renderAll();
                     
                     importResult.innerHTML = `
                         <p style="color: green;">Dane zaimportowane pomyślnie!</p>
@@ -2019,329 +1539,49 @@
                         </p>
                     `;
                     
-                    // Automatyczne przejście do list
                     document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
                     document.getElementById('lists').classList.add('active');
                     document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
                     document.querySelector(`.nav-link[data-page="lists"]`).classList.add('active');
                     
                 } catch (error) {
-                    console.error('Błąd importu:', error);
                     importResult.innerHTML = `<p style="color: red;">Błąd importu: ${error.message}</p>`;
                 }
             };
             
             reader.readAsText(file);
         });
-        
-        // Aktualizacja funkcji setupNavigation o nową stronę
-        const originalSetupNavigation = setupNavigation;
-        setupNavigation = function() {
-            originalSetupNavigation();
-            
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.addEventListener('click', (e) => {
-                    if (e.target.dataset.page === 'export-import') {
-                        // Resetuj wyniki
-                        document.getElementById('export-result').innerHTML = '';
-                        document.getElementById('import-result').innerHTML = '';
-                    }
-                });
-            });
-        };
-        
-        // Ponowne wywołanie setupNavigation po aktualizacji
-        setupNavigation();
-
-        // Konfiguracja Firebase - zastąp tymi wartościami z konsoli
-        const firebaseConfig = {
-          apiKey: "AIzaSyBi1f47qdude_3zl8vziTlFhVH0xx3J04U",
-          authDomain: "projekt-1-974cc.firebaseapp.com",
-          projectId: "projekt-1-974cc",
-          storageBucket: "projekt-1-974cc.firebasestorage.app",
-          messagingSenderId: "537046472561",
-          appId: "1:537046472561:web:bd17ffd942f6500a52c8d0",
-          measurementId: "G-BJN98JBYJK"
-        };
-        
-        // Inicjalizacja Firebase
-        firebase.initializeApp(firebaseConfig);
-        
-        // Referencje do usług Firebase
-        const auth = firebase.auth();
-        const database = firebase.database();
-        const provider = new firebase.auth.GoogleAuthProvider();
-        
-        // Globalna referencja do bazy danych
-        let dbRef = null;
-        
-        // Funkcja logowania
-        function signIn() {
-          auth.signInWithPopup(provider)
-            .then((result) => {
-              const user = result.user;
-              console.log("Zalogowano jako:", user.email);
-              initDatabase(user);
-            })
-            .catch((error) => {
-              console.error("Błąd logowania:", error);
-            });
-        }
-        
-        // Funkcja wylogowywania
-        function signOut() {
-          auth.signOut()
-            .then(() => {
-              console.log("Wylogowano");
-              dbRef = null;
-            })
-            .catch((error) => {
-              console.error("Błąd wylogowywania:", error);
-            });
-        }
-        
-        // Inicjalizacja bazy danych dla użytkownika
-        function initDatabase(user) {
-          dbRef = database.ref(`users/${user.uid}/attendanceSystem`);
-          
-          // Nasłuchuj zmian w bazie danych
-          dbRef.on('value', (snapshot) => {
-            const remoteData = snapshot.val();
-            if (remoteData) {
-              processRemoteData(remoteData);
-            }
-          });
-          
-          // Pierwsza synchronizacja
-          syncData();
-        }
-        
-        // Przetwarzanie danych z Firebase
-        function processRemoteData(remoteData) {
-          const localLastUpdated = localStorage.getItem('lastUpdated') || 0;
-          
-          if (remoteData.lastUpdated > localLastUpdated) {
-            // Aktualizuj dane lokalne
-            attendanceData = {
-              lists: remoteData.lists || [],
-              globalPeople: remoteData.globalPeople || [],
-              personDetails: remoteData.personDetails || {},
-              functions: remoteData.functions || []
-            };
-            
-            // Zapisz w localStorage
-            saveLocalData();
-            
-            // Odśwież UI
-            renderAll();
-          }
-        }
-        
-        // Synchronizacja danych z Firebase
-        function syncData() {
-          const dataToSave = {
-            lists: attendanceData.lists,
-            globalPeople: attendanceData.globalPeople,
-            personDetails: attendanceData.personDetails,
-            functions: attendanceData.functions,
-            lastUpdated: firebase.database.ServerValue.TIMESTAMP
-          };
-          
-          if (dbRef) {
-            dbRef.set(dataToSave)
-              .then(() => console.log("Dane zsynchronizowane z Firebase"))
-              .catch(error => console.error("Błąd synchronizacji:", error));
-          }
-        }
-        
-        // Modyfikacja funkcji saveData()
-        function saveData() {
-          // ... istniejąca logika zapisu do localStorage ...
-          
-          // Dodaj synchronizację z Firebase
-          syncData();
-        }
-        
-        // Funkcja renderująca stan uwierzytelniania
-        function renderAuthState(user) {
-          const authStatus = document.getElementById('auth-status');
-          const signInBtn = document.getElementById('sign-in-btn');
-          const signOutBtn = document.getElementById('sign-out-btn');
-          
-          if (user) {
-            authStatus.innerHTML = `Zalogowany jako: <strong>${user.email}</strong>`;
-            signInBtn.style.display = 'none';
-            signOutBtn.style.display = 'block';
-          } else {
-            authStatus.innerHTML = "Nieautoryzowany";
-            signInBtn.style.display = 'block';
-            signOutBtn.style.display = 'none';
-          }
-        }
-        
-        // Inicjalizacja po załadowaniu strony
-        document.addEventListener('DOMContentLoaded', () => {
-          // Inicjalizacja stanu uwierzytelniania
-          auth.onAuthStateChanged((user) => {
-            renderAuthState(user);
-            if (user) {
-              initDatabase(user);
-            }
-          });
-        
-          // Nasłuchiwanie przycisków
-          document.getElementById('sign-in-btn').addEventListener('click', signIn);
-          document.getElementById('sign-out-btn').addEventListener('click', signOut);
-          
-          // ... reszta istniejącej inicjalizacji ...
-        });
 
         // =============================================
-        // POPRAWIONA KONFIGURACJA FIREBASE
+        // INICJALIZACJA
         // =============================================
-        
-        // Przenieś konfigurację na początek sekcji Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyBi1f47qdude_3zl8vziTlFhVH0xx3J04U",
-            authDomain: "projekt-1-974cc.firebaseapp.com",
-            projectId: "projekt-1-974cc",
-            storageBucket: "projekt-1-974cc.firebasestorage.app",
-            messagingSenderId: "537046472561",
-            appId: "1:537046472561:web:bd17ffd942f6500a52c8d0",
-            measurementId: "G-BJN98JBYJK",
-            databaseURL: "https://projekt-1-974cc-default-rtdb.europe-west1.firebasedatabase.app" // DODAJ TĘ LINIĘ!
-        };
-        
-        // Inicjalizuj Firebase przed użyciem jakichkolwiek usług
-        try {
-            firebase.initializeApp(firebaseConfig);
-            console.log("Firebase zainicjalizowany poprawnie");
-        } catch (error) {
-            console.error("Błąd inicjalizacji Firebase:", error);
-        }
-        
-        // Użyj jednej instancji dla całej aplikacji
-        const firebaseAuth = firebase.auth();
-        const firebaseDatabase = firebase.database();
-        const googleProvider = new firebase.auth.GoogleAuthProvider();
-        
-        // Usuń ponowne deklaracje (te linie usuń całkowicie):
-        // const auth = firebase.auth();
-        // const database = firebase.database();
-        // const provider = new firebase.auth.GoogleAuthProvider();
-        
-        // =============================================
-        // POPRAWIONE FUNKCJE LOGOWANIA
-        // =============================================
-        
-        function signIn() {
-            firebaseAuth.signInWithPopup(googleProvider)
-                .then((result) => {
-                    const user = result.user;
-                    console.log("Zalogowano jako:", user.email);
-                    document.getElementById('auth-status').innerHTML = 
-                        `Zalogowany jako: <strong>${user.email}</strong>`;
-                    initDatabase(user);
-                })
-                .catch((error) => {
-                    console.error("Błąd logowania:", error);
-                    alert(`Błąd logowania: ${error.message}`);
-                });
-        }
-        
-        function signOut() {
-            firebaseAuth.signOut()
-                .then(() => {
-                    console.log("Wylogowano");
-                    document.getElementById('auth-status').textContent = "Nieautoryzowany";
-                })
-                .catch((error) => {
-                    console.error("Błąd wylogowywania:", error);
-                });
-        }
-        
-        // =============================================
-        // POPRAWIONA OBSŁUGA STANU UWIERZYTELNIANIA
-        // =============================================
-        
         document.addEventListener('DOMContentLoaded', () => {
-            // Elementy UI
-            const signInBtn = document.getElementById('sign-in-btn');
-            const signOutBtn = document.getElementById('sign-out-btn');
+            // Inicjalizacja przycisków autoryzacji
+            document.getElementById('sign-in-btn').addEventListener('click', signIn);
+            document.getElementById('sign-out-btn').addEventListener('click', signOut);
             
-            if (signInBtn) {
-                signInBtn.addEventListener('click', signIn);
-            }
-            
-            if (signOutBtn) {
-                signOutBtn.addEventListener('click', signOut);
-            }
-        
-            // Monitorowanie stanu uwierzytelniania
-            firebaseAuth.onAuthStateChanged((user) => {
-                if (user) {
-                    console.log("Użytkownik zalogowany:", user.email);
-                    document.getElementById('auth-status').innerHTML = 
-                        `Zalogowany jako: <strong>${user.email}</strong>`;
-                    document.getElementById('sign-in-btn').style.display = 'none';
-                    document.getElementById('sign-out-btn').style.display = 'block';
-                    initDatabase(user);
+            // Monitorowanie połączenia
+            firebaseDatabase.ref('.info/connected').on('value', (snapshot) => {
+                const status = document.getElementById('connection-status');
+                if (snapshot.val() === true) {
+                    status.textContent = 'Online';
+                    status.style.backgroundColor = '#4CAF50';
                 } else {
-                    console.log("Brak zalogowanego użytkownika");
-                    document.getElementById('auth-status').textContent = "Nieautoryzowany";
-                    document.getElementById('sign-in-btn').style.display = 'block';
-                    document.getElementById('sign-out-btn').style.display = 'none';
+                    status.textContent = 'Offline - praca lokalna';
+                    status.style.backgroundColor = '#f44336';
                 }
             });
-            
-            // ... reszta istniejącej inicjalizacji ...
+
+            // Inicjalizacja aplikacji
+            renderLists();
+            renderGlobalPeople();
+            renderFunctions();
+            setupNavigation();
+            setupEventListeners();
+            renderListFilterOptions();
+            setupKeyboardShortcuts();
+            setupSessionDateInput();
         });
-        
-        // =============================================
-        // POPRAWIONE POŁĄCZENIE Z BAZĄ DANYCH
-        // =============================================
-        
-        function initDatabase(user) {
-            if (!user) return;
-            
-            const dbRef = firebaseDatabase.ref(`users/${user.uid}/attendanceSystem`);
-            
-            // Nasłuchuj zmian w bazie danych
-            dbRef.on('value', (snapshot) => {
-                const remoteData = snapshot.val();
-                if (remoteData) {
-                    console.log("Otrzymano dane z Firebase");
-                    processRemoteData(remoteData);
-                }
-            });
-            
-            // Wykonaj początkową synchronizację
-            syncData();
-        }
-        
-        // =============================================
-        // DODATKOWE POPRAWKI
-        // =============================================
-        
-        // W funkcji saveData dodaj zapis timestampa:
-        function saveData() {
-            // ... istniejąca logika ...
-            localStorage.setItem('lastUpdated', Date.now());
-            
-            // Synchronizuj z Firebase
-            syncData();
-        }
-        
-        // W funkcji processRemoteData dodaj:
-        function processRemoteData(remoteData) {
-            const localLastUpdated = localStorage.getItem('lastUpdated') || 0;
-            
-            if (remoteData.lastUpdated > localLastUpdated) {
-                console.log("Aktualizuję dane z Firebase");
-                // ... reszta kodu ...
-            }
-        }
     </script>
 </body>
-
 </html>
