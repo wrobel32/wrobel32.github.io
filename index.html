@@ -250,6 +250,17 @@
             background-color: #4CAF50;
             color: white;
         }
+        
+        .no-groups {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .sync-buttons {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
@@ -276,6 +287,11 @@
                     <div id="auth-status" style="margin-bottom: 10px;">Nieautoryzowany</div>
                     <button id="sign-in-btn" class="auth-btn">Zaloguj z Google</button>
                     <button id="sign-out-btn" class="auth-btn" style="display: none;">Wyloguj</button>
+                    
+                    <div id="sync-buttons" class="sync-buttons" style="display: none;">
+                        <button id="save-data-btn" class="auth-btn">Zapisz dane</button>
+                        <button id="load-data-btn" class="auth-btn">Wczytaj dane</button>
+                    </div>
                 </div>
             </div>
         </nav>
@@ -500,16 +516,19 @@
             const authStatus = document.getElementById('auth-status');
             const signInBtn = document.getElementById('sign-in-btn');
             const signOutBtn = document.getElementById('sign-out-btn');
+            const syncButtons = document.getElementById('sync-buttons');
             
             if (user) {
                 authStatus.innerHTML = `Zalogowany jako: <strong>${user.email}</strong>`;
                 signInBtn.style.display = 'none';
                 signOutBtn.style.display = 'block';
+                syncButtons.style.display = 'flex';
                 initDatabase(user);
             } else {
                 authStatus.textContent = "Nieautoryzowany";
                 signInBtn.style.display = 'block';
                 signOutBtn.style.display = 'none';
+                syncButtons.style.display = 'none';
             }
         });
 
@@ -528,9 +547,6 @@
                     processRemoteData(remoteData);
                 }
             });
-            
-            // Wykonaj początkową synchronizację
-            syncData();
         }
 
         function processRemoteData(remoteData) {
@@ -550,8 +566,11 @@
             }
         }
 
-        function syncData() {
-            if (!dbRef) return;
+        function saveToFirebase() {
+            if (!dbRef) {
+                alert("Nie jesteś zalogowany! Zaloguj się, aby zapisać dane.");
+                return;
+            }
             
             const dataToSave = {
                 lists: attendanceData.lists,
@@ -562,8 +581,39 @@
             };
             
             dbRef.set(dataToSave)
-                .then(() => console.log("Dane zsynchronizowane z Firebase"))
-                .catch(error => console.error("Błąd synchronizacji:", error));
+                .then(() => {
+                    console.log("Dane zapisane w Firebase");
+                    alert("Dane zostały zapisane w chmurze!");
+                })
+                .catch(error => console.error("Błąd zapisu:", error));
+        }
+
+        function loadFromFirebase() {
+            if (!dbRef) {
+                alert("Nie jesteś zalogowany! Zaloguj się, aby wczytać dane.");
+                return;
+            }
+            
+            dbRef.once('value').then(snapshot => {
+                const remoteData = snapshot.val();
+                if (remoteData) {
+                    attendanceData = {
+                        lists: remoteData.lists || [],
+                        globalPeople: remoteData.globalPeople || [],
+                        personDetails: remoteData.personDetails || {},
+                        functions: remoteData.functions || []
+                    };
+                    
+                    saveLocalData();
+                    renderAll();
+                    alert("Dane zostały wczytane z chmury!");
+                } else {
+                    alert("Brak danych do wczytania w chmurze!");
+                }
+            }).catch(error => {
+                console.error("Błąd wczytywania:", error);
+                alert("Błąd wczytywania danych: " + error.message);
+            });
         }
 
         // =============================================
@@ -579,7 +629,9 @@
 
         function saveData() {
             saveLocalData();
-            syncData();
+            if (dbRef) {
+                saveToFirebase();
+            }
         }
 
         function renderAll() {
@@ -679,6 +731,7 @@
                     const index = parseInt(e.target.dataset.index);
                     const person = attendanceData.globalPeople[index];
 
+                    // Usuń osobę ze wszystkich list
                     attendanceData.lists.forEach(list => {
                         if (list.people) {
                             const personIndex = list.people.indexOf(person);
@@ -688,6 +741,7 @@
                         }
                     });
 
+                    // Usuń osobę globalnie
                     attendanceData.globalPeople.splice(index, 1);
                     delete attendanceData.personDetails[person];
                     saveData();
@@ -724,6 +778,7 @@
                     const index = parseInt(e.target.dataset.index);
                     const functionName = attendanceData.functions[index];
 
+                    // Usuń funkcję ze wszystkich osób
                     for (const person in attendanceData.personDetails) {
                         const details = attendanceData.personDetails[person];
                         if (details.functions) {
@@ -760,12 +815,15 @@
                 ).map(list => list.name);
 
                 const functions = attendanceData.personDetails[person]?.functions || [];
+                const groupsDisplay = lists.length 
+                    ? lists.join(', ') 
+                    : '<span class="no-groups">Brak</span>';
 
                 detailElement.innerHTML = `
                     <div class="person-info">
                         <div class="person-name">${person}</div>
                         <div class="person-meta">
-                            <div><strong>Podzespoły:</strong> ${lists.join(', ') || 'Brak'}</div>
+                            <div><strong>Podzespoły:</strong> ${groupsDisplay}</div>
                         </div>
                     </div>
                     <div class="function-section">
@@ -1056,6 +1114,10 @@
             });
 
             document.getElementById('apply-filter').addEventListener('click', renderStats);
+            
+            // Dodane przyciski zapisu i wczytania
+            document.getElementById('save-data-btn').addEventListener('click', saveToFirebase);
+            document.getElementById('load-data-btn').addEventListener('click', loadFromFirebase);
         }
 
         function openList(listId) {
@@ -1105,12 +1167,14 @@
                     const index = parseInt(e.target.dataset.index);
                     const person = list.people[index];
 
+                    // Usuń osobę z sesji
                     list.sessions.forEach(session => {
-                        if (session.attendance[person]) {
+                        if (session.attendance && session.attendance[person]) {
                             delete session.attendance[person];
                         }
                     });
 
+                    // Usuń osobę z listy
                     list.people.splice(index, 1);
                     saveData();
                     renderPeopleList();
@@ -1527,7 +1591,7 @@
                     }
                     
                     attendanceData = importedData;
-                    saveData();
+                    saveLocalData();
                     renderAll();
                     
                     importResult.innerHTML = `
