@@ -110,6 +110,10 @@
             color: #ffc107;
         }
 
+        .attendance-not-taken {
+            color: #6c757d;
+        }
+
         .nav-link {
             display: block;
             padding: 10px;
@@ -1102,7 +1106,8 @@
 
                 if (list.people) {
                     list.people.forEach(person => {
-                        newSession.attendance[person] = 'present';
+                        // Domyślnie ustaw status "nie brany"
+                        newSession.attendance[person] = 'not_taken';
                     });
                 }
 
@@ -1240,12 +1245,14 @@
 
             list.people.forEach(person => {
                 const row = document.createElement('tr');
-                const status = session.attendance[person] || 'present';
+                // Domyślnie "nie brany" jeśli status nie jest ustawiony
+                const status = session.attendance[person] || 'not_taken';
 
                 row.innerHTML = `
                     <td>${person}</td>
                     <td>
                         <select class="person-attendance" data-person="${person}">
+                            <option value="not_taken" ${status === 'not_taken' ? 'selected' : ''}>Nie brany</option>
                             <option value="present" ${status === 'present' ? 'selected' : ''}>Obecny</option>
                             <option value="absent" ${status === 'absent' ? 'selected' : ''}>Nieobecny</option>
                             <option value="excused" ${status === 'excused' ? 'selected' : ''}>Usprawiedliwiony</option>
@@ -1309,6 +1316,9 @@
 
                         if (session.attendance) {
                             Object.entries(session.attendance).forEach(([person, status]) => {
+                                // Pomijamy status "nie brany" w statystykach
+                                if (status === 'not_taken') return;
+                                
                                 if (!stats[person]) {
                                     stats[person] = {
                                         person: person,
@@ -1391,12 +1401,14 @@
                 let presentCount = 0;
                 let absentCount = 0;
                 let excusedCount = 0;
+                let notTakenCount = 0;
 
                 if (session.attendance) {
                     Object.values(session.attendance).forEach(status => {
                         if (status === 'present') presentCount++;
-                        if (status === 'absent') absentCount++;
-                        if (status === 'excused') excusedCount++;
+                        else if (status === 'absent') absentCount++;
+                        else if (status === 'excused') excusedCount++;
+                        else if (status === 'not_taken') notTakenCount++;
                     });
                 }
 
@@ -1406,7 +1418,8 @@
                         <div>
                             <span class="attendance-present">Obecni: ${presentCount}</span> | 
                             <span class="attendance-absent">Nieobecni: ${absentCount}</span> |
-                            <span class="attendance-excused">Usprawiedliwieni: ${excusedCount}</span>
+                            <span class="attendance-excused">Usprawiedliwieni: ${excusedCount}</span> |
+                            <span class="attendance-not-taken">Nie brani: ${notTakenCount}</span>
                         </div>
                     </div>
                     <div>
@@ -1465,7 +1478,12 @@
                                     </div>
                                     <div id="${containerId}" class="excuse-list">
                                         ${list.people ? list.people.map(person => {
-                                const isExcused = session.attendance[person] === 'excused';
+                                const status = session.attendance[person] || 'not_taken';
+                                
+                                // Pomijamy osoby z statusem "nie brany"
+                                if (status === 'not_taken') return '';
+                                
+                                const isExcused = status === 'excused';
                                 return `
                                                 <div class="excuse-item">
                                                     <input type="checkbox" id="excuse-${list.id}-${session.date}-${person}" 
@@ -1513,6 +1531,11 @@
                     });
 
                     list.people.forEach(person => {
+                        const status = session.attendance[person] || 'not_taken';
+                        
+                        // Pomijamy osoby z statusem "nie brany"
+                        if (status === 'not_taken') return;
+                        
                         if (selectedPersons.includes(person)) {
                             session.attendance[person] = 'excused';
                         } else if (session.attendance[person] === 'excused') {
